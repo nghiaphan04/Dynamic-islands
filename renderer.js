@@ -143,6 +143,8 @@ const PAUSE_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" width="12" heigh
 const COMPACT_PLAY_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M8 5v14l11-7z"/></svg>`;
 const COMPACT_PAUSE_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
+let lastMediaImage = null;
+
 function updateMedia() {
   window.api.getMediaStats().then((media) => {
     console.log("[MEDIA DEBUG]", JSON.stringify(media));
@@ -166,10 +168,15 @@ function updateMedia() {
       
       mediaTitle.textContent = media.title || 'Không có tiêu đề';
       mediaArtist.textContent = media.artist || 'Không rõ ca sĩ';
-      if (media.image) {
-        mediaArt.src = media.image;
-      } else {
-        mediaArt.removeAttribute('src');
+      // Chỉ cập nhật ảnh bìa khi thực sự đổi bài, tránh tốn memory/CPU decode lại
+      const img = media.image || null;
+      if (img !== lastMediaImage) {
+        lastMediaImage = img;
+        if (img) {
+          mediaArt.src = img;
+        } else {
+          mediaArt.removeAttribute('src');
+        }
       }
     } else {
       island.classList.remove('has-media');
@@ -182,6 +189,7 @@ function updateMedia() {
       btnPlay.innerHTML = PLAY_SVG;
       mediaTitle.textContent = 'Không có nhạc';
       mediaArtist.textContent = 'Dừng';
+      lastMediaImage = null;
       mediaArt.removeAttribute('src');
     }
   }).catch(() => {
@@ -194,6 +202,7 @@ function updateMedia() {
     btnPlay.innerHTML = PLAY_SVG;
     mediaTitle.textContent = 'Không có nhạc';
     mediaArtist.textContent = 'Dừng';
+    lastMediaImage = null;
     mediaArt.removeAttribute('src');
   });
 }

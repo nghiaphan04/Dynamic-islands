@@ -9,6 +9,8 @@ using Windows.Storage.Streams;
 class MediaHelper
 {
     static GlobalSystemMediaTransportControlsSessionManager _manager;
+    static string _cachedTitle = "";
+    static string _cachedImage;
 
     static int Main(string[] args)
     {
@@ -145,23 +147,34 @@ class MediaHelper
         string base64 = null;
         if (props != null && props.Thumbnail != null)
         {
-            try
+            string currentTitle = props.Title ?? "";
+            if (currentTitle == _cachedTitle)
             {
-                using (var stream = AwaitOp(props.Thumbnail.OpenReadAsync()))
-                {
-                    ulong size = stream.Size;
-                    if (size > 0)
-                    {
-                        var buffer = new Windows.Storage.Streams.Buffer((uint)size);
-                        var readBuffer = AwaitProgress(stream.ReadAsync(buffer, (uint)size, InputStreamOptions.None));
-                        var reader = DataReader.FromBuffer(readBuffer);
-                        var bytes = new byte[readBuffer.Length];
-                        reader.ReadBytes(bytes);
-                        base64 = "data:image/png;base64," + Convert.ToBase64String(bytes);
-                    }
-                }
+                // Cùng bài hát → tái sử dụng ảnh đã đọc, tránh re-encode base64 mỗi lần poll
+                base64 = _cachedImage;
             }
-            catch { }
+            else
+            {
+                try
+                {
+                    using (var stream = AwaitOp(props.Thumbnail.OpenReadAsync()))
+                    {
+                        ulong size = stream.Size;
+                        if (size > 0)
+                        {
+                            var buffer = new Windows.Storage.Streams.Buffer((uint)size);
+                            var readBuffer = AwaitProgress(stream.ReadAsync(buffer, (uint)size, InputStreamOptions.None));
+                            var reader = DataReader.FromBuffer(readBuffer);
+                            var bytes = new byte[readBuffer.Length];
+                            reader.ReadBytes(bytes);
+                            base64 = "data:image/png;base64," + Convert.ToBase64String(bytes);
+                        }
+                    }
+                    _cachedTitle = currentTitle;
+                    _cachedImage = base64;
+                }
+                catch { }
+            }
         }
 
         StringBuilder sb = new StringBuilder();

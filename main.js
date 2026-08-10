@@ -1,6 +1,9 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 
+// Tắt tăng tốc GPU để bỏ process GPU, giảm đáng kể bộ nhớ (đảo nhỏ, ít animation nên OK)
+app.disableHardwareAcceleration();
+
 let mainWindow;
 
 function createWindow() {
