@@ -61,7 +61,8 @@ function updateMediaProgress(media) {
     lastUpdated: media.lastUpdated || 0,
     syncAt: Date.now()
   };
-  renderProgress();
+  // Không render đè lên vị trí đang kéo (tránh bị nhảy về chỗ nhạc đang phát)
+  if (!isSeeking) renderProgress();
 }
 
 // Chạy mượt giữa các lần poll (500ms) khi đang phát
