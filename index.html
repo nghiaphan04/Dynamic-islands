@@ -41,17 +41,19 @@
     <div class="view-expanded">
       
       <!-- Hàng đầu tiên: Tiêu đề & Nút đóng nhanh -->
-      <div class="expanded-header">
-        <div class="header-actions">
-          <button id="btn-taskmgr" class="action-btn" title="Mở Task Manager">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M3 14h4v7H3zm7-7h4v14h-4zm7-3h4v17h-4z"/></svg>
-          </button>
-          <button id="btn-uninstall" class="action-btn uninstall" title="Gỡ cài đặt Dynamic Island" style="display: none;">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-          </button>
-          <button id="btn-close" class="action-btn close" title="Đóng ứng dụng">✕</button>
+        <div class="expanded-header">
+          <div class="header-left">
+            <button id="btn-uninstall" class="action-btn uninstall" title="Gỡ cài đặt Dynamic Island" style="display: none;">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </button>
+          </div>
+          <div class="header-actions">
+            <button id="btn-taskmgr" class="action-btn" title="Mở Task Manager">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M3 14h4v7H3zm7-7h4v14h-4zm7-3h4v17h-4z"/></svg>
+            </button>
+            <button id="btn-close" class="action-btn close" title="Đóng ứng dụng">✕</button>
+          </div>
         </div>
-      </div>
 
       <!-- Nội dung chính: Widget Media Player (trái) và CPU/RAM (phải) -->
       <div class="expanded-content">

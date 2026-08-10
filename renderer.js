@@ -89,7 +89,7 @@ function collapseIsland() {
 // Bấm vào đảo để mở rộng
 island.addEventListener('click', (e) => {
   // Tránh việc click vào các nút bấm bên trong cũng kích hoạt toggle
-  if (e.target.closest('.header-actions') || e.target.closest('.expanded-footer')) {
+  if (e.target.closest('.header-actions') || e.target.closest('.header-left') || e.target.closest('.expanded-footer')) {
     return;
   }
   
