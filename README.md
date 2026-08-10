@@ -52,6 +52,16 @@ npm start
 
 > Tip: run `npm start` at logon and enable **"Launch at startup"** from the island for a true Dynamic Island experience.
 
+### 📦 Build installer (.exe)
+
+```bash
+npm run dist
+```
+
+Creates `dist/Dynamic Island Setup 1.0.0.exe` (NSIS installer). No code-signing
+certificate is used, so Windows SmartScreen may show a warning on first run
+(click *More info → Run anyway*).
+
 ---
 
 ## 🗂️ Project Structure
@@ -167,6 +177,15 @@ npm start
 ```
 
 > Mẹo: chạy `npm start` ngay khi máy bật và bật tùy chọn **"Tự khởi động cùng Windows"** trong đảo để có trải nghiệm giống Dynamic Island thật.
+
+### 📦 Đóng gói file cài đặt (.exe)
+
+```bash
+npm run dist
+```
+
+Tạo ra `dist/Dynamic Island Setup 1.0.0.exe` (trình cài NSIS). Vì không dùng chứng chỉ
+ký số nên Windows SmartScreen có thể cảnh báo lần đầu (bấm *More info → Run anyway*).
 
 ---
 
