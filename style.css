@@ -476,6 +476,13 @@ body {
   gap: 8px;
 }
 
+.media-progress-track-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
 .media-progress-track {
   flex: 1;
   height: 3px;
@@ -485,16 +492,43 @@ body {
   cursor: pointer;
 }
 
-.media-progress-track:hover .media-progress-fill {
-  background: #34c759;
-}
-
 .media-progress-fill {
   height: 100%;
   width: 0%;
   background: #30d158;
   border-radius: 2px;
   transition: width 0.5s linear;
+}
+
+/* Chấm tròn đầu thanh progress, hiện khi hover/kéo */
+.media-progress-thumb {
+  position: absolute;
+  left: 0%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.15s ease, left 0.5s linear;
+}
+
+.media-progress:hover .media-progress-thumb,
+.media-progress.seeking .media-progress-thumb {
+  opacity: 1;
+}
+
+.media-progress.seeking .media-progress-thumb,
+.media-progress.seeking .media-progress-fill {
+  transition: none;
+}
+
+.media-progress-track:hover .media-progress-fill {
+  background: #34c759;
 }
 
 #island.media-paused .media-progress-fill {

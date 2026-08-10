@@ -16,6 +16,7 @@ const mediaTitle = document.getElementById('media-title');
 const mediaArtist = document.getElementById('media-artist');
 const mediaArt = document.getElementById('media-art');
 const mediaProgressFill = document.getElementById('media-progress-fill');
+const mediaProgressThumb = document.getElementById('media-progress-thumb');
 const mediaTime = document.getElementById('media-time');
 
 function formatTime(ms) {
@@ -48,6 +49,7 @@ function renderProgress() {
   const pos = currentPosition();
   const percent = s.duration > 0 ? Math.min(100, (pos / s.duration) * 100) : 0;
   mediaProgressFill.style.width = `${percent}%`;
+  mediaProgressThumb.style.left = `${percent}%`;
   mediaTime.textContent = `${formatTime(pos)} / ${formatTime(s.duration)}`;
 }
 
@@ -68,6 +70,7 @@ setInterval(() => {
 }, 500);
 
 // ===== TUA (SEEK) thanh tiến trình =====
+const mediaProgress = document.getElementById('media-progress');
 const mediaProgressTrack = document.getElementById('media-progress-track');
 let isSeeking = false;
 let seekPos = 0;
@@ -78,6 +81,7 @@ function seekToEvent(e) {
   const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
   seekPos = ratio * mediaState.duration;
   mediaProgressFill.style.width = `${ratio * 100}%`;
+  mediaProgressThumb.style.left = `${ratio * 100}%`;
   mediaTime.textContent = `${formatTime(seekPos)} / ${formatTime(mediaState.duration)}`;
 }
 
@@ -85,23 +89,36 @@ function onSeekMove(e) {
   if (isSeeking) seekToEvent(e);
 }
 
-function onSeekEnd() {
+function onSeekEnd(e) {
   if (!isSeeking) return;
   isSeeking = false;
-  document.removeEventListener('mousemove', onSeekMove);
+  mediaProgress.classList.remove('seeking');
+  try {
+    mediaProgressTrack.releasePointerCapture(e.pointerId);
+  } catch (err) { /* ignore */ }
+  mediaProgressTrack.removeEventListener('pointermove', onSeekMove);
+  mediaProgressTrack.removeEventListener('pointerup', onSeekEnd);
+  mediaProgressTrack.removeEventListener('pointercancel', onSeekEnd);
   if (mediaState.duration > 0) {
+    // Tiếp tục từ vị trí vừa tua để thanh không bị giật lại trước lần poll sau
+    mediaState.position = seekPos;
+    mediaState.lastUpdated = Date.now();
     window.api.sendMediaSeek(seekPos);
   }
 }
 
-mediaProgressTrack.addEventListener('mousedown', (e) => {
+// Dùng Pointer Events + capture để kéo mượt, không bị tuột khi ra ngoài cửa sổ
+mediaProgressTrack.addEventListener('pointerdown', (e) => {
   e.stopPropagation();
   e.preventDefault();
   if (!mediaState.duration) return;
   isSeeking = true;
+  mediaProgress.classList.add('seeking');
   seekToEvent(e);
-  document.addEventListener('mousemove', onSeekMove);
-  document.addEventListener('mouseup', onSeekEnd, { once: true });
+  mediaProgressTrack.setPointerCapture(e.pointerId);
+  mediaProgressTrack.addEventListener('pointermove', onSeekMove);
+  mediaProgressTrack.addEventListener('pointerup', onSeekEnd);
+  mediaProgressTrack.addEventListener('pointercancel', onSeekEnd);
 });
 
 const btnPrev = document.getElementById('btn-prev');
