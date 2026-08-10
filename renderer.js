@@ -26,13 +26,46 @@ function formatTime(ms) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function updateMediaProgress(media) {
-  const duration = media.duration || 0;
-  const position = media.position || 0;
-  const percent = duration > 0 ? Math.min(100, (position / duration) * 100) : 0;
-  mediaProgressFill.style.width = `${percent}%`;
-  mediaTime.textContent = `${formatTime(position)} / ${formatTime(duration)}`;
+// Vị trí phát hiện tại: một số app (trình duyệt, TikTok web...) không đẩy vị trí liên tục
+// lên Windows (LastUpdatedTime bị cũ). Khi đang phát, ngoại suy bằng đồng hồ thực rồi
+// tự đồng bộ lại mỗi lần poll.
+let mediaState = { playing: false, position: 0, duration: 0, lastUpdated: 0, syncAt: 0 };
+
+function currentPosition() {
+  const s = mediaState;
+  if (!s.duration) return 0;
+  let pos = s.position || 0;
+  if (s.playing) {
+    const base = s.lastUpdated || s.syncAt;
+    const delta = Date.now() - base;
+    if (delta > 0) pos += delta;
+  }
+  return Math.min(s.duration, pos);
 }
+
+function renderProgress() {
+  const s = mediaState;
+  const pos = currentPosition();
+  const percent = s.duration > 0 ? Math.min(100, (pos / s.duration) * 100) : 0;
+  mediaProgressFill.style.width = `${percent}%`;
+  mediaTime.textContent = `${formatTime(pos)} / ${formatTime(s.duration)}`;
+}
+
+function updateMediaProgress(media) {
+  mediaState = {
+    playing: media.status === 'playing',
+    position: media.position || 0,
+    duration: media.duration || 0,
+    lastUpdated: media.lastUpdated || 0,
+    syncAt: Date.now()
+  };
+  renderProgress();
+}
+
+// Chạy mượt giữa các lần poll (500ms) khi đang phát
+setInterval(() => {
+  if (mediaState.playing && mediaState.duration) renderProgress();
+}, 500);
 
 const btnPrev = document.getElementById('btn-prev');
 const btnPlay = document.getElementById('btn-play');
@@ -219,8 +252,8 @@ function updateMedia() {
       mediaArtist.textContent = 'Dừng';
       lastMediaImage = null;
       mediaArt.removeAttribute('src');
-      mediaProgressFill.style.width = '0%';
-      mediaTime.textContent = '0:00 / 0:00';
+      mediaState = { playing: false, position: 0, duration: 0, lastUpdated: 0, syncAt: Date.now() };
+      renderProgress();
     }
   }).catch(() => {
     island.classList.remove('has-media');
@@ -234,8 +267,8 @@ function updateMedia() {
     mediaArtist.textContent = 'Dừng';
     lastMediaImage = null;
     mediaArt.removeAttribute('src');
-    mediaProgressFill.style.width = '0%';
-    mediaTime.textContent = '0:00 / 0:00';
+    mediaState = { playing: false, position: 0, duration: 0, lastUpdated: 0, syncAt: Date.now() };
+    renderProgress();
   });
 }
 

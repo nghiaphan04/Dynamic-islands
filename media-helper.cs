@@ -145,6 +145,7 @@ class MediaHelper
         string status = playbackInfo != null ? playbackInfo.PlaybackStatus.ToString() : "Stopped";
 
         long positionMs = 0, durationMs = 0;
+        long lastUpdatedMs = 0;
         try
         {
             var timeline = active.GetTimelineProperties();
@@ -154,6 +155,7 @@ class MediaHelper
                 positionMs = (long)timeline.Position.TotalMilliseconds;
                 if (positionMs < 0) positionMs = 0;
                 if (positionMs > durationMs) positionMs = durationMs;
+                lastUpdatedMs = timeline.LastUpdatedTime.ToUnixTimeMilliseconds();
             }
         }
         catch { }
@@ -206,6 +208,7 @@ class MediaHelper
         sb.Append(",\"image\":").Append(base64 == null ? "null" : "\"" + base64 + "\"");
         sb.Append(",\"position\":").Append(positionMs);
         sb.Append(",\"duration\":").Append(durationMs);
+        sb.Append(",\"lastUpdated\":").Append(lastUpdatedMs);
         sb.Append("}");
         return sb.ToString();
     }

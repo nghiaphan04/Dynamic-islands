@@ -489,7 +489,7 @@ body {
   width: 0%;
   background: #30d158;
   border-radius: 2px;
-  transition: width 1s linear;
+  transition: width 0.5s linear;
 }
 
 #island.media-paused .media-progress-fill {
