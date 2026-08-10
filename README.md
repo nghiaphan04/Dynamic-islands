@@ -1,5 +1,113 @@
 # 🏝️ Nastis Dynamic Island
 
+A **Dynamic Island** widget for Windows that mimics the iPhone's Dynamic Island UI, built with **Electron**.
+
+The island always floats at the top-center of your screen. It auto-collapses/expands on hover or click and shows live CPU, RAM, and the currently playing media across your system.
+
+![Electron](https://img.shields.io/badge/Electron-31.x-47848F?logo=electron&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D6)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+---
+
+## ✨ Features
+
+- **Compact mode** — a slim 170×30 bar showing CPU and RAM right on the island.
+- **Expanded mode** — click the island to open a 440×200 panel containing:
+  - **Media Player widget**: current track title, artist, album-art visualizer and media controls (Play/Pause, Next, Prev).
+  - **System widget**: CPU & RAM progress bars with color warnings (yellow ≥ 60%, red ≥ 85%).
+- **Now playing detection** — automatically detects the playing track from any app (Spotify, YouTube, browsers...) via the Windows 10/11 WinRT API.
+- **Media controls** — press Play/Pause, Next, Prev straight from the island.
+- **Marquee effect** — long track titles scroll continuously.
+- **Music visualizer** — animated equalizer bars while music is playing.
+- **Smart click-through** — only the island receives mouse input; the surrounding transparent area never blocks your clicks.
+- **Launch at startup** — toggle right from the UI.
+- **Always on top** — floats above every other window.
+
+---
+
+## 📋 Requirements
+
+- Windows 10 or Windows 11
+- [Node.js](https://nodejs.org/) ≥ 18
+- PowerShell (built into Windows)
+
+---
+
+## 🚀 Installation & Usage
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/nghiaphan04/Dynamic-islands.git
+cd Dynamic-islands
+
+# 2. Install dependencies
+npm install
+
+# 3. Run the app
+npm start
+```
+
+> Tip: run `npm start` at logon and enable **"Launch at startup"** from the island for a true Dynamic Island experience.
+
+---
+
+## 🗂️ Project Structure
+
+```
+dynamic-island/
+├── main.js            # Electron main process (window, IPC, autostart, media control)
+├── preload.js         # Secure bridge between Renderer and Node (CPU/RAM, calls PowerShell)
+├── renderer.js        # UI logic (expand/collapse, stats & media updates, visualizer)
+├── index.html         # Dynamic Island UI (compact & expanded)
+├── style.css          # All styling & animations
+├── get-media.ps1      # PowerShell script to fetch the now-playing track (WinRT)
+├── package.json       # Project config & dependencies
+└── README.md
+```
+
+---
+
+## 🧩 How It Works
+
+| Component | Role |
+|---|---|
+| `main.js` | Creates a transparent frameless 480×250 Electron window that is always on top. Handles IPC for closing the app, autostart, and sending media keys. |
+| `preload.js` | Computes CPU % (from `os.cpus()`) and RAM % (from `os.totalmem()`), and runs `get-media.ps1` to fetch media info. |
+| `get-media.ps1` | Uses the WinRT API `GlobalSystemMediaTransportControlsSessionManager` to fetch the title, artist, album and artwork of the currently playing track system-wide. |
+| `renderer.js` | Refreshes the UI every 2s (stats) and 1.5s (media), handles hover/click to expand or collapse the island, runs the visualizer and marquee effects. |
+
+---
+
+## ⌨️ Controls
+
+| Action | Result |
+|---|---|
+| **Hover** the island | Keeps the island open / cancels the collapse countdown |
+| **Click** the island | Expands the island |
+| **Move mouse away** | Auto-collapses after 2 seconds |
+| **✕** | Quits the app completely |
+
+---
+
+## 🛠️ Troubleshooting
+
+- **Media is not detected** — make sure the app playing music is running on Windows (Spotify, browsers and media-notification apps are supported). Some apps need system media notifications enabled.
+- **Island blocks your clicks** — if the transparent area around the island blocks clicks, make sure `main.js` calls `setIgnoreMouseEvents(true, { forward: true })`.
+- **CPU always shows 0%** — CPU is sampled over a 2-second interval, so it needs a moment to update.
+
+---
+
+## 📄 License
+
+This project is distributed under the [MIT](LICENSE) license.
+
+---
+
+---
+
+# 🏝️ Nastis Dynamic Island
+
 Widget **Dynamic Island** cho Windows, mô phỏng giao diện Dynamic Island của iPhone, được xây dựng bằng **Electron**.
 
 Đảo luôn nằm nổi ở giữa mép trên màn hình, tự động thu gọn/mở rộng khi hover hoặc click, hiển thị thông tin CPU, RAM và trình phát nhạc đang chạy trên hệ thống.
