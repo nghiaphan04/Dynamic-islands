@@ -161,7 +161,7 @@ body {
 /* Trạng thái mở rộng (Expanded) */
 #island.expanded {
   width: 440px;
-  height: 200px;
+  height: 220px;
   border-radius: 28px;
   padding: 16px;
   cursor: default;
@@ -310,6 +310,7 @@ body {
   gap: 16px;
   flex: 1;
   align-items: center;
+  justify-content: space-evenly;
 }
 
 .widget {
