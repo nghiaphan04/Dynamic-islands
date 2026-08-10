@@ -492,17 +492,21 @@ body {
 /* Ảnh bìa bài hát (thay cho visualizer) */
 .media-art-container {
   width: 48px;
-  height: 48px;
+  height: 36px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .media-art {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  object-fit: cover;
+  max-width: 48px;
+  max-height: 36px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
   display: block;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
   transition: filter 0.3s ease, opacity 0.3s ease;
 }
 
