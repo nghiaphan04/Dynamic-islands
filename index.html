@@ -92,27 +92,19 @@
 
         <!-- Widget tài nguyên hệ thống -->
         <div class="widget stats-widget">
-          <div class="stat-column">
-            <div class="chili-bars" id="chili-cpu"></div>
-            <div class="gauge">
-              <svg class="gauge-svg" viewBox="0 0 100 52">
-                <path class="gauge-track" d="M 8 50 A 42 42 0 0 1 92 50"/>
-                <path class="gauge-fill" id="gauge-fill-cpu" d="M 8 50 A 42 42 0 0 1 92 50"/>
-              </svg>
-              <div class="gauge-value" id="gauge-val-cpu">0%</div>
-              <div class="gauge-label">CPU</div>
+          <div class="stat-row">
+            <div class="stat-label">CPU</div>
+            <div class="stat-bar-container">
+              <div id="cpu-bar" class="stat-bar" style="width: 0%"></div>
             </div>
+            <div class="stat-val" id="cpu-val">0%</div>
           </div>
-          <div class="stat-column">
-            <div class="chili-bars" id="chili-ram"></div>
-            <div class="gauge">
-              <svg class="gauge-svg" viewBox="0 0 100 52">
-                <path class="gauge-track" d="M 8 50 A 42 42 0 0 1 92 50"/>
-                <path class="gauge-fill" id="gauge-fill-ram" d="M 8 50 A 42 42 0 0 1 92 50"/>
-              </svg>
-              <div class="gauge-value" id="gauge-val-ram">0%</div>
-              <div class="gauge-label">RAM</div>
+          <div class="stat-row">
+            <div class="stat-label">RAM</div>
+            <div class="stat-bar-container">
+              <div id="ram-bar" class="stat-bar" style="width: 0%"></div>
             </div>
+            <div class="stat-val" id="ram-val">0%</div>
           </div>
         </div>
       </div>
