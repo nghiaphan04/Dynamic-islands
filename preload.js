@@ -95,6 +95,9 @@ contextBridge.exposeInMainWorld('api', {
   // Đóng app
   closeApp: () => ipcRenderer.send('close-app'),
 
+  // Mở Task Manager
+  openTaskManager: () => ipcRenderer.send('open-task-manager'),
+
   // Lấy dữ liệu phần cứng
   getSystemStats: () => {
     const totalMem = os.totalmem();

@@ -67,6 +67,12 @@ function createWindow() {
   ipcMain.on('close-app', () => {
     app.quit();
   });
+
+  // Mở Task Manager (tách riêng process, không block)
+  ipcMain.on('open-task-manager', () => {
+    const { spawn } = require('child_process');
+    spawn('taskmgr.exe', [], { detached: true, stdio: 'ignore' }).unref();
+  });
 }
 
 app.whenReady().then(() => {

@@ -20,6 +20,7 @@ const btnPrev = document.getElementById('btn-prev');
 const btnPlay = document.getElementById('btn-play');
 const btnNext = document.getElementById('btn-next');
 const btnClose = document.getElementById('btn-close');
+const btnTaskmgr = document.getElementById('btn-taskmgr');
 const chkAutostart = document.getElementById('chk-autostart');
 
 let isExpanded = false;
@@ -226,6 +227,12 @@ setInterval(updateMedia, 1500);
 btnClose.addEventListener('click', (e) => {
   e.stopPropagation();
   window.api.closeApp();
+});
+
+// Mở Task Manager
+btnTaskmgr.addEventListener('click', (e) => {
+  e.stopPropagation();
+  window.api.openTaskManager();
 });
 
 // Load trạng thái tự khởi động ban đầu
