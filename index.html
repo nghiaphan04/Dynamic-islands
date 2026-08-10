@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nastis Dynamic Island</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Container trung tâm của Dynamic Island -->
+  <div id="island" class="compact" title="Nhấp chuột để mở rộng">
+    
+    <!-- TRẠNG THÁI THU GỌN (COMPACT MODE) -->
+    <div class="view-compact">
+      <!-- Khi KHÔNG có nhạc -->
+      <div id="compact-normal" class="compact-layout-wrapper">
+        <div class="compact-left">
+          <span id="compact-time">CPU 0%</span>
+        </div>
+        <div class="compact-right">
+          <span id="compact-ram">RAM 0%</span>
+        </div>
+      </div>
+      
+      <!-- Khi CÓ nhạc đang phát/tạm dừng -->
+      <div id="compact-media" class="compact-layout-wrapper" style="display: none;">
+        <span id="compact-media-status-btn" class="compact-play-btn" title="Phát/Tạm dừng"></span>
+        <div class="compact-marquee-container">
+          <div class="marquee-track">
+            <span id="compact-media-title" class="marquee-text">Không có nhạc</span>
+            <span id="compact-media-title-2" class="marquee-text">Không có nhạc</span>
+          </div>
+        </div>
+        <div class="compact-media-right">
+          <span id="compact-ram-media">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRẠNG THÁI MỞ RỘNG (EXPANDED MODE) -->
+    <div class="view-expanded">
+      
+      <!-- Hàng đầu tiên: Tiêu đề & Nút đóng nhanh -->
+      <div class="expanded-header">
+        <div class="header-actions">
+          <button id="btn-close" class="action-btn close" title="Đóng ứng dụng">✕</button>
+        </div>
+      </div>
+
+      <!-- Nội dung chính: Widget Media Player (trái) và CPU/RAM (phải) -->
+      <div class="expanded-content">
+        <!-- Widget trình phát nhạc (media-widget) -->
+        <div class="widget media-widget">
+          <div class="media-info-container">
+            <div class="music-visualizer" id="music-visualizer">
+              <div class="visualizer-bar"></div>
+              <div class="visualizer-bar"></div>
+              <div class="visualizer-bar"></div>
+              <div class="visualizer-bar"></div>
+              <div class="visualizer-bar"></div>
+            </div>
+            <div class="media-details">
+              <div class="media-title" id="media-title">Không có nhạc</div>
+              <div class="media-artist" id="media-artist">Dừng</div>
+            </div>
+          </div>
+          <div class="media-controls">
+            <button id="btn-prev" class="media-btn" title="Bài trước">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+            </button>
+            <button id="btn-play" class="media-btn play" title="Phát/Tạm dừng">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <button id="btn-next" class="media-btn" title="Bài tiếp theo">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Widget tài nguyên hệ thống -->
+        <div class="widget stats-widget">
+          <div class="stat-row">
+            <div class="stat-label">CPU</div>
+            <div class="stat-bar-container">
+              <div id="cpu-bar" class="stat-bar" style="width: 0%"></div>
+            </div>
+            <div class="stat-val" id="cpu-val">0%</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">RAM</div>
+            <div class="stat-bar-container">
+              <div id="ram-bar" class="stat-bar" style="width: 0%"></div>
+            </div>
+            <div class="stat-val" id="ram-val">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hàng cuối: Cài đặt khởi động cùng Win -->
+      <div class="expanded-footer">
+        <label class="switch-container">
+          <input type="checkbox" id="chk-autostart">
+          <span class="slider"></span>
+          <span class="switch-label">Tự khởi động cùng Windows</span>
+        </label>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

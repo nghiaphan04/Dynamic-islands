@@ -1,0 +1,561 @@
+/* Font chữ hiện đại từ hệ thống hoặc Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background: transparent;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 5px; /* Giữ khoảng cách nhỏ với mép trên */
+}
+
+/* KHUNG DYNAMIC ISLAND */
+#island {
+  background: rgba(5, 5, 5, 0.96);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  
+  /* Hiệu ứng chuyển động mượt mà khi co giãn kích thước */
+  transition: width 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+              height 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+              border-radius 0.35s ease,
+              background-color 0.3s ease;
+}
+
+/* Trạng thái thu gọn (Compact) */
+#island.compact {
+  width: 170px;
+  height: 30px;
+  border-radius: 15px;
+  padding: 0 12px;
+}
+
+#island.compact:hover {
+  background: rgba(0, 0, 0, 1.0);
+  box-shadow: 0 10px 45px rgba(0, 0, 0, 0.8), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Tăng chiều rộng khi hòn đảo thu gọn đang phát nhạc */
+#island.compact.has-media {
+  width: 230px;
+}
+
+/* Styling cho chế độ nhạc thu gọn */
+.compact-layout-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+
+/* Nút Play/Pause dạng hình tròn khớp với cạnh island */
+.compact-play-btn {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 50%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.1s ease;
+  user-select: none;
+  margin-left: -12px; /* Sát viền trái island */
+}
+
+.compact-play-btn:hover {
+  background: transparent;
+}
+
+.compact-play-btn:active {
+  transform: scale(0.9);
+}
+
+.compact-marquee-container {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  mask-image: linear-gradient(to right, transparent, black 8px, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8px, black 92%, transparent);
+}
+
+/* Wrapper chứa 2 bản text chạy liên tục */
+.marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  animation: compact-marquee 22s linear infinite;
+}
+
+.marquee-text {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 9.5px;
+  font-weight: 500;
+  padding-right: 48px; /* Khoảng cách giữa 2 lần lặp */
+}
+
+/* Ô hiển thị % RAM dạng hình tròn khớp với cạnh phải island */
+.compact-media-right {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 50%;
+  background: transparent; /* Không màu nền */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  white-space: nowrap;
+  margin-right: -12px; /* Bù đúng padding của island (12px) để sát viền */
+}
+
+@keyframes compact-marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* Trạng thái mở rộng (Expanded) */
+#island.expanded {
+  width: 440px;
+  height: 200px;
+  border-radius: 28px;
+  padding: 16px;
+  cursor: default;
+  transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1.1),
+              height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1.1),
+              background-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+
+
+/* ĐIỀU KHIỂN HIỂN THỊ CÁC CHẾ ĐỘ */
+.view-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  opacity: 1;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.view-expanded {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+#island.compact .view-expanded {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  visibility: hidden;
+}
+
+#island.expanded .view-compact {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  visibility: hidden;
+}
+
+#island.expanded .view-expanded {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* CSS CHO VIEW THU GỌN (COMPACT) */
+.compact-left, .compact-right {
+  display: flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.compact-left {
+  color: #ff9f0a; /* Màu cam nổi bật nhẹ */
+}
+
+.compact-right {
+  color: #30d158; /* Màu xanh lá hệ thống */
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #ff9f0a;
+  border-radius: 50%;
+  margin-right: 6px;
+  box-shadow: 0 0 8px #ff9f0a;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px #ff9f0a; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+/* CSS CHO VIEW MỞ RỘNG (EXPANDED) */
+.expanded-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 6px;
+}
+
+.header-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+}
+
+.header-dot {
+  width: 5px;
+  height: 5px;
+  background-color: #007aff;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 9px;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: scale(1.05);
+}
+
+.action-btn.close:hover {
+  background: #ff453a;
+}
+
+/* Nội dung Widget */
+.expanded-content {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 16px;
+  flex: 1;
+  align-items: center;
+}
+
+.widget {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  height: auto; /* Tự co giãn theo nội dung, không kéo dài hết 100% chiều cao */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0; /* Ngăn chặn co giãn tràn lưới khi chữ quá dài */
+}
+
+/* Widget thời gian */
+.clock-widget {
+  text-align: center;
+}
+
+.large-time {
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.date-string {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+/* Widget cấu hình */
+.stats-widget {
+  gap: 10px;
+}
+
+.stat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #30d158, #34c759);
+  border-radius: 3px;
+  transition: width 0.5s ease-out;
+}
+
+/* Đổi màu thanh tài nguyên dựa trên mức sử dụng cao */
+.stat-bar.warning {
+  background: linear-gradient(90deg, #ff9f0a, #ffb340);
+}
+
+.stat-bar.danger {
+  background: linear-gradient(90deg, #ff453a, #ff6961);
+}
+
+.stat-val {
+  font-size: 11px;
+  font-weight: 600;
+  align-self: flex-end;
+  margin-top: -2px;
+}
+
+/* FOOTER - Nút chọn tự động chạy */
+.expanded-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.switch-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.switch-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.switch-container:hover .switch-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.switch-container input {
+  display: none;
+}
+
+.slider {
+  position: relative;
+  width: 26px;
+  height: 14px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 7px;
+  transition: background-color 0.2s;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 10px;
+  width: 10px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.switch-container input:checked + .slider {
+  background-color: #30d158;
+}
+
+.switch-container input:checked + .slider::before {
+  transform: translateX(12px);
+}
+
+/* Widget Media Player */
+.media-widget {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between !important;
+  height: 100%;
+  gap: 8px;
+}
+
+.media-info-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.media-details {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.media-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: left;
+}
+
+.media-artist {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: left;
+}
+
+/* Visualizer Bars (Thay thế vị trí AVT ở bên trái) */
+.music-visualizer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 24px; /* Hẹp lại */
+  height: 20px;
+  padding: 2px 0;
+  box-sizing: border-box;
+}
+
+.visualizer-bar {
+  width: 3px;
+  height: 3px; /* Chiều cao mặc định nhỏ */
+  background: linear-gradient(180deg, #30d158, #34c759);
+  border-radius: 1.5px;
+  transition: height 0.08s ease-in-out, background-color 0.2s ease;
+}
+
+#island.media-paused .visualizer-bar {
+  height: 3px !important;
+  background: rgba(255,255,255,0.2) !important;
+}
+
+/* Hàng nút bấm điều khiển phát nhạc */
+.media-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.media-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  width: 28px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.media-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: scale(1.05);
+}
+
+.media-btn.play {
+  width: 32px;
+  height: 26px;
+  font-weight: bold;
+  font-size: 11px;
+  background: rgba(48, 209, 88, 0.15);
+  border-color: rgba(48, 209, 88, 0.3);
+  color: #30d158;
+}
+
+.media-btn.play:hover {
+  background: rgba(48, 209, 88, 0.25);
+  color: #34c759;
+}
+
+
