@@ -1,4 +1,4 @@
-# 🏝️ Nastis Dynamic Island
+# 🏝️ Dynamic Island
 
 A **Dynamic Island** widget for Windows that mimics the iPhone's Dynamic Island UI, built with **Electron**.
 
@@ -106,7 +106,7 @@ This project is distributed under the [MIT](LICENSE) license.
 
 ---
 
-# 🏝️ Nastis Dynamic Island
+# 🏝️ Dynamic Island
 
 Widget **Dynamic Island** cho Windows, mô phỏng giao diện Dynamic Island của iPhone, được xây dựng bằng **Electron**.
 
