@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 // Tắt tăng tốc GPU để bỏ process GPU, giảm đáng kể bộ nhớ (đảo nhỏ, ít animation nên OK)
 app.disableHardwareAcceleration();
@@ -73,6 +74,26 @@ function createWindow() {
     const { spawn } = require('child_process');
     spawn('taskmgr.exe', [], { detached: true, stdio: 'ignore' }).unref();
   });
+
+  // Kiểm tra xem có trình gỡ cài đặt không (chỉ bản đã cài NSIS mới có)
+  ipcMain.handle('can-uninstall', () => {
+    if (!app.isPackaged) return false;
+    return fs.existsSync(uninstallerPath());
+  });
+
+  // Gỡ cài đặt: chạy uninstaller NSIS rồi thoát app
+  ipcMain.on('uninstall-app', () => {
+    const { spawn } = require('child_process');
+    const uninstaller = uninstallerPath();
+    if (fs.existsSync(uninstaller)) {
+      spawn(uninstaller, [], { detached: true, stdio: 'ignore' }).unref();
+      app.quit();
+    }
+  });
+}
+
+function uninstallerPath() {
+  return path.join(path.dirname(process.execPath), 'Uninstall Dynamic Island.exe');
 }
 
 app.whenReady().then(() => {

@@ -108,6 +108,10 @@ contextBridge.exposeInMainWorld('api', {
   // Mở Task Manager
   openTaskManager: () => ipcRenderer.send('open-task-manager'),
 
+  // Gỡ cài đặt
+  canUninstall: () => ipcRenderer.invoke('can-uninstall'),
+  uninstallApp: () => ipcRenderer.send('uninstall-app'),
+
   // Lấy dữ liệu phần cứng
   getSystemStats: () => {
     const totalMem = os.totalmem();

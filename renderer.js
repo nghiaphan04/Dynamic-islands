@@ -235,6 +235,19 @@ btnTaskmgr.addEventListener('click', (e) => {
   window.api.openTaskManager();
 });
 
+// Gỡ cài đặt (chỉ hiện nút khi bản đã cài NSIS)
+const btnUninstall = document.getElementById('btn-uninstall');
+window.api.canUninstall().then((ok) => {
+  if (ok) btnUninstall.style.display = 'flex';
+});
+
+btnUninstall.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (confirm('Gỡ cài đặt Dynamic Island khỏi máy này?')) {
+    window.api.uninstallApp();
+  }
+});
+
 // Load trạng thái tự khởi động ban đầu
 window.api.getAutostart().then((enabled) => {
   chkAutostart.checked = enabled;
