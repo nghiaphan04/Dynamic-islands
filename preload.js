@@ -1,9 +1,19 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const os = require('os');
+const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const MEDIA_HELPER = path.join(__dirname, 'media-helper.exe');
+// Khi đóng gói, media-helper.exe được giải nén ra resources/app.asar.unpacked/
+// (không spawn trực tiếp được file nằm trong app.asar)
+function getMediaHelperPath() {
+  const direct = path.join(__dirname, 'media-helper.exe');
+  const unpacked = path.join(process.resourcesPath, 'app.asar.unpacked', 'media-helper.exe');
+  if (fs.existsSync(unpacked)) return unpacked;
+  return direct;
+}
+
+const MEDIA_HELPER = getMediaHelperPath();
 
 // Hàm tính toán % CPU sử dụng
 let prevCpuInfo = getCpuAverage();

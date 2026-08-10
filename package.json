@@ -3,11 +3,46 @@
   "version": "1.0.0",
   "description": "Dynamic Island desktop widget for Windows",
   "main": "main.js",
+  "author": "nghiaphan04",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
-  "dependencies": {},
   "devDependencies": {
-    "electron": "^31.3.1"
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.dynamicisland.app",
+    "productName": "Dynamic Island",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "style.css",
+      "media-helper.exe",
+      "media-helper.cs",
+      "build-helper.cmd",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "media-helper.exe"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": false,
+      "runAfterFinish": true
+    }
   }
 }
