@@ -468,6 +468,42 @@ body {
   min-width: 0;
 }
 
+/* Thanh tiến trình phát nhạc */
+.media-progress {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.media-progress-track {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.media-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #30d158;
+  border-radius: 2px;
+  transition: width 1s linear;
+}
+
+#island.media-paused .media-progress-fill {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.media-time {
+  font-size: 8.5px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .media-details {
   flex: 1;
   overflow: hidden;

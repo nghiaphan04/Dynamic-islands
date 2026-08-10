@@ -144,6 +144,20 @@ class MediaHelper
         var playbackInfo = active.GetPlaybackInfo();
         string status = playbackInfo != null ? playbackInfo.PlaybackStatus.ToString() : "Stopped";
 
+        long positionMs = 0, durationMs = 0;
+        try
+        {
+            var timeline = active.GetTimelineProperties();
+            if (timeline != null && timeline.EndTime.TotalMilliseconds > 0)
+            {
+                durationMs = (long)timeline.EndTime.TotalMilliseconds;
+                positionMs = (long)timeline.Position.TotalMilliseconds;
+                if (positionMs < 0) positionMs = 0;
+                if (positionMs > durationMs) positionMs = durationMs;
+            }
+        }
+        catch { }
+
         string base64 = null;
         if (props != null && props.Thumbnail != null)
         {
@@ -190,6 +204,8 @@ class MediaHelper
             sb.Append(",\"title\":null,\"artist\":null,\"album\":null");
         }
         sb.Append(",\"image\":").Append(base64 == null ? "null" : "\"" + base64 + "\"");
+        sb.Append(",\"position\":").Append(positionMs);
+        sb.Append(",\"duration\":").Append(durationMs);
         sb.Append("}");
         return sb.ToString();
     }

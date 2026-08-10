@@ -15,6 +15,24 @@ const ramVal = document.getElementById('ram-val');
 const mediaTitle = document.getElementById('media-title');
 const mediaArtist = document.getElementById('media-artist');
 const mediaArt = document.getElementById('media-art');
+const mediaProgressFill = document.getElementById('media-progress-fill');
+const mediaTime = document.getElementById('media-time');
+
+function formatTime(ms) {
+  if (!ms || ms <= 0) return '0:00';
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function updateMediaProgress(media) {
+  const duration = media.duration || 0;
+  const position = media.position || 0;
+  const percent = duration > 0 ? Math.min(100, (position / duration) * 100) : 0;
+  mediaProgressFill.style.width = `${percent}%`;
+  mediaTime.textContent = `${formatTime(position)} / ${formatTime(duration)}`;
+}
 
 const btnPrev = document.getElementById('btn-prev');
 const btnPlay = document.getElementById('btn-play');
@@ -177,6 +195,7 @@ function updateMedia() {
       
       mediaTitle.textContent = media.title || 'Không có tiêu đề';
       mediaArtist.textContent = media.artist || 'Không rõ ca sĩ';
+      updateMediaProgress(media);
       // Chỉ cập nhật ảnh bìa khi thực sự đổi bài, tránh tốn memory/CPU decode lại
       const img = media.image || null;
       if (img !== lastMediaImage) {
@@ -200,6 +219,8 @@ function updateMedia() {
       mediaArtist.textContent = 'Dừng';
       lastMediaImage = null;
       mediaArt.removeAttribute('src');
+      mediaProgressFill.style.width = '0%';
+      mediaTime.textContent = '0:00 / 0:00';
     }
   }).catch(() => {
     island.classList.remove('has-media');
@@ -213,6 +234,8 @@ function updateMedia() {
     mediaArtist.textContent = 'Dừng';
     lastMediaImage = null;
     mediaArt.removeAttribute('src');
+    mediaProgressFill.style.width = '0%';
+    mediaTime.textContent = '0:00 / 0:00';
   });
 }
 
