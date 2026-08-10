@@ -503,7 +503,7 @@ body {
   max-height: 36px;
   width: auto;
   height: auto;
-  border-radius: 2px;
+  border-radius: 3px;
   object-fit: contain;
   display: block;
   background: transparent;
