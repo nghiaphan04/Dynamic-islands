@@ -14,7 +14,7 @@ const ramBar = document.getElementById('ram-bar');
 const ramVal = document.getElementById('ram-val');
 const mediaTitle = document.getElementById('media-title');
 const mediaArtist = document.getElementById('media-artist');
-const visualizerBars = document.querySelectorAll('.visualizer-bar');
+const mediaArt = document.getElementById('media-art');
 
 const btnPrev = document.getElementById('btn-prev');
 const btnPlay = document.getElementById('btn-play');
@@ -137,29 +137,6 @@ function setBarColorClass(barElement, value) {
   }
 }
 
-let visualizerInterval = null;
-
-function startVisualizer() {
-  if (visualizerInterval) return;
-  visualizerInterval = setInterval(() => {
-    visualizerBars.forEach((bar) => {
-      // Chiều cao ngẫu nhiên từ 3px tới 18px tạo hiệu ứng đập theo nhạc nhẹ nhàng, gọn gàng
-      const height = Math.floor(Math.random() * 16) + 3;
-      bar.style.height = `${height}px`;
-    });
-  }, 100);
-}
-
-function stopVisualizer() {
-  if (visualizerInterval) {
-    clearInterval(visualizerInterval);
-    visualizerInterval = null;
-  }
-  visualizerBars.forEach((bar) => {
-    bar.style.height = '3px';
-  });
-}
-
 const PLAY_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M8 5v14l11-7z"/></svg>`;
 const PAUSE_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
@@ -182,15 +159,18 @@ function updateMedia() {
       if (media.status === 'paused') {
         island.classList.add('media-paused');
         btnPlay.innerHTML = PLAY_SVG;
-        stopVisualizer();
       } else {
         island.classList.remove('media-paused');
         btnPlay.innerHTML = PAUSE_SVG;
-        startVisualizer();
       }
       
       mediaTitle.textContent = media.title || 'Không có tiêu đề';
       mediaArtist.textContent = media.artist || 'Không rõ ca sĩ';
+      if (media.image) {
+        mediaArt.src = media.image;
+      } else {
+        mediaArt.removeAttribute('src');
+      }
     } else {
       island.classList.remove('has-media');
       island.classList.remove('media-paused');
@@ -202,7 +182,7 @@ function updateMedia() {
       btnPlay.innerHTML = PLAY_SVG;
       mediaTitle.textContent = 'Không có nhạc';
       mediaArtist.textContent = 'Dừng';
-      stopVisualizer();
+      mediaArt.removeAttribute('src');
     }
   }).catch(() => {
     island.classList.remove('has-media');
@@ -214,7 +194,7 @@ function updateMedia() {
     btnPlay.innerHTML = PLAY_SVG;
     mediaTitle.textContent = 'Không có nhạc';
     mediaArtist.textContent = 'Dừng';
-    stopVisualizer();
+    mediaArt.removeAttribute('src');
   });
 }
 

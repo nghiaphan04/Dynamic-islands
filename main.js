@@ -1,8 +1,6 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 
-const MEDIA_HELPER = path.join(__dirname, 'media-helper.exe');
-
 let mainWindow;
 
 function createWindow() {
@@ -65,17 +63,6 @@ function createWindow() {
   // Đóng ứng dụng
   ipcMain.on('close-app', () => {
     app.quit();
-  });
-
-  // Điều khiển nhạc (Play/Pause, Next, Prev) qua helper C# (media-helper.exe, WinRT)
-  ipcMain.on('media-control', (event, action) => {
-    const { exec } = require('child_process');
-    const validActions = ['play', 'next', 'prev'];
-    if (validActions.includes(action)) {
-      exec(`"${MEDIA_HELPER}" ${action}`, (err) => {
-        if (err) console.error("Media control error:", err);
-      });
-    }
   });
 }
 

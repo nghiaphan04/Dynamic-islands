@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading;
 using Windows.Foundation;
@@ -9,27 +8,16 @@ using Windows.Storage.Streams;
 
 class MediaHelper
 {
+    static GlobalSystemMediaTransportControlsSessionManager _manager;
+
     static int Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
         try
         {
-            var manager = AwaitOp(GlobalSystemMediaTransportControlsSessionManager.RequestAsync());
-            if (manager == null) { OutputStatus("stopped"); return 0; }
-
-            var sessions = manager.GetSessions();
-            if (sessions == null || sessions.Count == 0) { OutputStatus("stopped"); return 0; }
-
-            GlobalSystemMediaTransportControlsSession active = FindActiveSession(sessions);
-            if (active == null) { OutputStatus("stopped"); return 0; }
-
-            string command = args.Length > 0 ? args[0].ToLower() : "get";
-
-            if (command == "play") { AwaitOp(active.TryTogglePlayPauseAsync()); return 0; }
-            if (command == "next") { AwaitOp(active.TrySkipNextAsync()); return 0; }
-            if (command == "prev") { AwaitOp(active.TrySkipPreviousAsync()); return 0; }
-
-            return OutputMediaInfo(active);
+            if (args.Length > 0 && args[0].Equals("daemon", StringComparison.OrdinalIgnoreCase))
+                return RunDaemon();
+            return RunOnce(args);
         }
         catch (Exception ex)
         {
@@ -37,6 +25,71 @@ class MediaHelper
                               JsonEscape(ex.Message) + "\"}");
             return 1;
         }
+    }
+
+    // Chế độ nền: đọc lệnh từ stdin (get/play/next/prev), trả JSON theo từng dòng
+    static int RunDaemon()
+    {
+        string line;
+        while ((line = Console.ReadLine()) != null)
+        {
+            try
+            {
+                string[] parts = line.Split(new char[] { ' ' }, 2);
+                string cmd = parts.Length > 0 ? parts[0].Trim().ToLower() : "get";
+                switch (cmd)
+                {
+                    case "get":
+                        Console.WriteLine(GetMediaJson());
+                        break;
+                    case "play":
+                    case "next":
+                    case "prev":
+                        SendControl(cmd);
+                        Console.WriteLine("{\"ok\":true}");
+                        break;
+                    default:
+                        Console.WriteLine("{\"status\":\"stopped\"}");
+                        break;
+                }
+                Console.Out.Flush();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("{\"status\":\"error\",\"message\":\"" +
+                                  JsonEscape(ex.Message) + "\"}");
+                Console.Out.Flush();
+            }
+        }
+        return 0;
+    }
+
+    static int RunOnce(string[] args)
+    {
+        string command = args.Length > 0 ? args[0].ToLower() : "get";
+
+        var manager = GetManager();
+        if (manager == null) { OutputStatus("stopped"); return 0; }
+
+        var sessions = manager.GetSessions();
+        if (sessions == null || sessions.Count == 0) { OutputStatus("stopped"); return 0; }
+
+        var active = FindActiveSession(sessions);
+        if (active == null) { OutputStatus("stopped"); return 0; }
+
+        if (command == "play") { AwaitOp(active.TryTogglePlayPauseAsync()); return 0; }
+        if (command == "next") { AwaitOp(active.TrySkipNextAsync()); return 0; }
+        if (command == "prev") { AwaitOp(active.TrySkipPreviousAsync()); return 0; }
+
+        Console.WriteLine(BuildMediaJson(active));
+        return 0;
+    }
+
+    static GlobalSystemMediaTransportControlsSessionManager GetManager()
+    {
+        if (_manager == null)
+            _manager = AwaitOp(GlobalSystemMediaTransportControlsSessionManager.RequestAsync());
+        return _manager;
     }
 
     static GlobalSystemMediaTransportControlsSession FindActiveSession(
@@ -53,7 +106,37 @@ class MediaHelper
         return null;
     }
 
-    static int OutputMediaInfo(GlobalSystemMediaTransportControlsSession active)
+    static string GetMediaJson()
+    {
+        var manager = GetManager();
+        if (manager == null) return "{\"status\":\"stopped\"}";
+
+        var sessions = manager.GetSessions();
+        if (sessions == null || sessions.Count == 0) return "{\"status\":\"stopped\"}";
+
+        var active = FindActiveSession(sessions);
+        if (active == null) return "{\"status\":\"stopped\"}";
+
+        return BuildMediaJson(active);
+    }
+
+    static void SendControl(string command)
+    {
+        var manager = GetManager();
+        if (manager == null) return;
+
+        var sessions = manager.GetSessions();
+        if (sessions == null || sessions.Count == 0) return;
+
+        var active = FindActiveSession(sessions);
+        if (active == null) return;
+
+        if (command == "play") AwaitOp(active.TryTogglePlayPauseAsync());
+        else if (command == "next") AwaitOp(active.TrySkipNextAsync());
+        else if (command == "prev") AwaitOp(active.TrySkipPreviousAsync());
+    }
+
+    static string BuildMediaJson(GlobalSystemMediaTransportControlsSession active)
     {
         var props = AwaitOp(active.TryGetMediaPropertiesAsync());
         var playbackInfo = active.GetPlaybackInfo();
@@ -95,8 +178,7 @@ class MediaHelper
         }
         sb.Append(",\"image\":").Append(base64 == null ? "null" : "\"" + base64 + "\"");
         sb.Append("}");
-        Console.WriteLine(sb.ToString());
-        return 0;
+        return sb.ToString();
     }
 
     static void OutputStatus(string status)
@@ -106,13 +188,13 @@ class MediaHelper
 
     static T AwaitOp<T>(IAsyncOperation<T> op)
     {
-        while (op.Status == AsyncStatus.Started) Thread.Sleep(10);
+        while (op.Status == AsyncStatus.Started) Thread.Sleep(5);
         return op.GetResults();
     }
 
     static T AwaitProgress<T, P>(IAsyncOperationWithProgress<T, P> op)
     {
-        while (op.Status == AsyncStatus.Started) Thread.Sleep(10);
+        while (op.Status == AsyncStatus.Started) Thread.Sleep(5);
         return op.GetResults();
     }
 

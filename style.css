@@ -489,28 +489,27 @@ body {
   text-align: left;
 }
 
-/* Visualizer Bars (Thay thế vị trí AVT ở bên trái) */
-.music-visualizer {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 24px; /* Hẹp lại */
-  height: 20px;
-  padding: 2px 0;
-  box-sizing: border-box;
+/* Ảnh bìa bài hát (thay cho visualizer) */
+.media-art-container {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 }
 
-.visualizer-bar {
-  width: 3px;
-  height: 3px; /* Chiều cao mặc định nhỏ */
-  background: linear-gradient(180deg, #30d158, #34c759);
-  border-radius: 1.5px;
-  transition: height 0.08s ease-in-out, background-color 0.2s ease;
+.media-art {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: filter 0.3s ease, opacity 0.3s ease;
 }
 
-#island.media-paused .visualizer-bar {
-  height: 3px !important;
-  background: rgba(255,255,255,0.2) !important;
+#island.media-paused .media-art {
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.6;
 }
 
 /* Hàng nút bấm điều khiển phát nhạc */

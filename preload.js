@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const os = require('os');
 const path = require('path');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 
 const MEDIA_HELPER = path.join(__dirname, 'media-helper.exe');
 
@@ -36,21 +36,52 @@ function getCpuUsage() {
   return percentage;
 }
 
-function getMediaStats() {
-  return new Promise((resolve) => {
-    // Gọi helper C# đã biên dịch (media-helper.exe) để lấy thông tin nhạc đang phát (WinRT)
-    exec(`"${MEDIA_HELPER}" get`, (err, stdout) => {
-      if (err) {
-        resolve({ status: 'stopped' });
-        return;
+// Chạy media-helper.exe một lần dưới dạng daemon nền, gửi lệnh qua stdin để tránh
+// chi phí khởi động process mới mỗi lần poll (giảm delay đáng kể)
+let mediaProc = null;
+let pendingResolvers = [];
+let lineBuffer = '';
+
+function spawnMediaDaemon() {
+  mediaProc = spawn(MEDIA_HELPER, ['daemon'], { stdio: ['pipe', 'pipe', 'pipe'] });
+  mediaProc.on('error', () => { mediaProc = null; });
+  mediaProc.on('exit', () => { mediaProc = null; });
+  mediaProc.stderr.on('data', () => {});
+  mediaProc.stdout.setEncoding('utf8');
+  mediaProc.stdout.on('data', (chunk) => {
+    lineBuffer += chunk;
+    let idx;
+    while ((idx = lineBuffer.indexOf('\n')) >= 0) {
+      const line = lineBuffer.slice(0, idx).trim();
+      lineBuffer = lineBuffer.slice(idx + 1);
+      const resolve = pendingResolvers.shift();
+      if (resolve && line) {
+        try { resolve(JSON.parse(line)); }
+        catch { resolve({ status: 'stopped' }); }
       }
-      try {
-        resolve(JSON.parse(stdout.trim()));
-      } catch (e) {
-        resolve({ status: 'stopped' });
-      }
-    });
+    }
   });
+}
+
+function sendMediaCommand(cmd) {
+  return new Promise((resolve) => {
+    if (!mediaProc || mediaProc.exitCode !== null) spawnMediaDaemon();
+    const resolver = (value) => resolve(value);
+    pendingResolvers.push(resolver);
+    mediaProc.stdin.write(cmd + '\n');
+    // An toàn: nếu không có phản hồi sau 3s thì coi như dừng
+    setTimeout(() => {
+      const i = pendingResolvers.indexOf(resolver);
+      if (i >= 0) {
+        pendingResolvers.splice(i, 1);
+        resolve({ status: 'stopped' });
+      }
+    }, 3000);
+  });
+}
+
+function getMediaStats() {
+  return sendMediaCommand('get');
 }
 
 contextBridge.exposeInMainWorld('api', {
@@ -80,6 +111,8 @@ contextBridge.exposeInMainWorld('api', {
   // Lấy thông tin media đang phát
   getMediaStats: () => getMediaStats(),
 
-  // Gửi lệnh điều khiển nhạc
-  sendMediaControl: (action) => ipcRenderer.send('media-control', action)
+  // Gửi lệnh điều khiển nhạc qua daemon (không cần qua main process)
+  sendMediaControl: (action) => {
+    sendMediaCommand(action);
+  }
 });
