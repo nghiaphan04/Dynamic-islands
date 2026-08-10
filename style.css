@@ -612,12 +612,11 @@ body {
 
 .media-btn {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   color: #ffffff;
-  width: 28px;
-  height: 24px;
+  width: 30px;
+  height: 26px;
   border-radius: 6px;
-  font-size: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -631,18 +630,8 @@ body {
 }
 
 .media-btn.play {
-  width: 32px;
-  height: 26px;
-  font-weight: bold;
-  font-size: 11px;
-  background: rgba(48, 209, 88, 0.15);
-  border-color: rgba(48, 209, 88, 0.3);
-  color: #30d158;
-}
-
-.media-btn.play:hover {
-  background: rgba(48, 209, 88, 0.25);
-  color: #34c759;
+  width: 34px;
+  height: 28px;
 }
 
 
