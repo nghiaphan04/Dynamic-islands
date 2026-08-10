@@ -115,6 +115,14 @@ function updateStats() {
   compactTime.textContent = `CPU ${stats.cpu}%`;
   compactRam.textContent = `RAM ${stats.ram}%`;
   compactRamMedia.textContent = `${stats.ram}%`;
+
+  // Đổi màu RAM ở chế độ thu gọn đang phát nhạc (xám → cam ≥60% → đỏ ≥85%)
+  compactRamMedia.classList.remove('warning', 'danger');
+  if (stats.ram >= 85) {
+    compactRamMedia.classList.add('danger');
+  } else if (stats.ram >= 60) {
+    compactRamMedia.classList.add('warning');
+  }
   
   // View mở rộng - CPU
   cpuVal.textContent = `${stats.cpu}%`;

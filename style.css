@@ -140,6 +140,15 @@ body {
   margin-right: -12px; /* Bù đúng padding của island (12px) để sát viền */
 }
 
+/* Màu theo mức RAM khi thu gọn đang phát nhạc */
+#compact-ram-media.warning {
+  color: #ff9f0a;
+}
+
+#compact-ram-media.danger {
+  color: #ff453a;
+}
+
 @keyframes compact-marquee {
   0% {
     transform: translate3d(0, 0, 0);
