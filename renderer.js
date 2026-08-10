@@ -8,10 +8,10 @@ const compactMediaTitle2 = document.getElementById('compact-media-title-2');
 const compactMediaStatusBtn = document.getElementById('compact-media-status-btn');
 const compactRamMedia = document.getElementById('compact-ram-media');
 
-const cpuBar = document.getElementById('cpu-bar');
-const cpuVal = document.getElementById('cpu-val');
-const ramBar = document.getElementById('ram-bar');
-const ramVal = document.getElementById('ram-val');
+const gaugeFillCpu = document.getElementById('gauge-fill-cpu');
+const gaugeValCpu = document.getElementById('gauge-val-cpu');
+const gaugeFillRam = document.getElementById('gauge-fill-ram');
+const gaugeValRam = document.getElementById('gauge-val-ram');
 const mediaTitle = document.getElementById('media-title');
 const mediaArtist = document.getElementById('media-artist');
 const mediaArt = document.getElementById('media-art');
@@ -214,6 +214,14 @@ function updateTime() {
 }
 
 // Cập nhật thông số CPU/RAM
+const GAUGE_ARC_LEN = 42 * Math.PI;
+
+function setGauge(fillEl, valueEl, pct) {
+  valueEl.textContent = `${pct}%`;
+  const clamped = Math.min(100, Math.max(0, pct));
+  fillEl.style.strokeDashoffset = (GAUGE_ARC_LEN * (1 - clamped / 100)).toFixed(1);
+}
+
 function updateStats() {
   const stats = window.api.getSystemStats();
   
@@ -230,27 +238,25 @@ function updateStats() {
     compactRamMedia.classList.add('warning');
   }
   
-  // View mở rộng - CPU
-  cpuVal.textContent = `${stats.cpu}%`;
-  cpuBar.style.width = `${stats.cpu}%`;
-  setBarColorClass(cpuBar, stats.cpu);
-
-  // View mở rộng - RAM
-  ramVal.textContent = `${stats.ram}%`;
-  ramBar.style.width = `${stats.ram}%`;
-  setBarColorClass(ramBar, stats.ram);
+  // View mở rộng - gauge CPU / RAM
+  setGauge(gaugeFillCpu, gaugeValCpu, stats.cpu);
+  setGauge(gaugeFillRam, gaugeValRam, stats.ram);
 }
 
+// Các thanh ngang xếp thành hình ớt chuông (rộng trên, thuôn dần, đầu nhọn)
+const CHILI_WIDTHS = [90, 100, 96, 88, 79, 70, 61, 51, 41, 30, 18, 8];
 
-
-function setBarColorClass(barElement, value) {
-  barElement.classList.remove('warning', 'danger');
-  if (value >= 85) {
-    barElement.classList.add('danger');
-  } else if (value >= 60) {
-    barElement.classList.add('warning');
-  }
+function buildChiliBars(container) {
+  CHILI_WIDTHS.forEach((w) => {
+    const bar = document.createElement('div');
+    bar.className = 'chili-bar';
+    bar.style.width = `${w}%`;
+    container.appendChild(bar);
+  });
 }
+
+buildChiliBars(document.getElementById('chili-cpu'));
+buildChiliBars(document.getElementById('chili-ram'));
 
 const PLAY_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>`;
 const PAUSE_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
