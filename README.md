@@ -30,7 +30,9 @@ The island always floats at the top-center of your screen. It auto-collapses/exp
 
 - Windows 10 or Windows 11
 - [Node.js](https://nodejs.org/) ≥ 18
-- PowerShell (built into Windows)
+
+> No PowerShell needed. Media detection & control use a small compiled C# helper
+> (`media-helper.exe`) that talks to Windows directly via the WinRT API.
 
 ---
 
@@ -57,14 +59,20 @@ npm start
 ```
 dynamic-island/
 ├── main.js            # Electron main process (window, IPC, autostart, media control)
-├── preload.js         # Secure bridge between Renderer and Node (CPU/RAM, calls PowerShell)
+├── preload.js         # Secure bridge between Renderer and Node (CPU/RAM, calls media-helper)
 ├── renderer.js        # UI logic (expand/collapse, stats & media updates, visualizer)
 ├── index.html         # Dynamic Island UI (compact & expanded)
 ├── style.css          # All styling & animations
-├── get-media.ps1      # PowerShell script to fetch the now-playing track (WinRT)
+├── media-helper.cs    # C# helper (WinRT): fetch now-playing track + media controls
+├── media-helper.exe   # Pre-built helper binary (used at runtime)
+├── build-helper.cmd   # Rebuild media-helper.exe with the built-in csc.exe
 ├── package.json       # Project config & dependencies
 └── README.md
 ```
+
+> `media-helper.exe` is pre-built and committed, so the app runs out of the box.
+> Rebuild it any time with `build-helper.cmd` (uses the .NET Framework `csc.exe`
+> that ships with Windows — no SDK, no PowerShell).
 
 ---
 
@@ -72,9 +80,9 @@ dynamic-island/
 
 | Component | Role |
 |---|---|
-| `main.js` | Creates a transparent frameless 480×250 Electron window that is always on top. Handles IPC for closing the app, autostart, and sending media keys. |
-| `preload.js` | Computes CPU % (from `os.cpus()`) and RAM % (from `os.totalmem()`), and runs `get-media.ps1` to fetch media info. |
-| `get-media.ps1` | Uses the WinRT API `GlobalSystemMediaTransportControlsSessionManager` to fetch the title, artist, album and artwork of the currently playing track system-wide. |
+| `main.js` | Creates a transparent frameless 480×250 Electron window that is always on top. Handles IPC for closing the app, autostart, and media control commands (delegated to `media-helper.exe`). |
+| `preload.js` | Computes CPU % (from `os.cpus()`) and RAM % (from `os.totalmem()`), and runs `media-helper.exe get` to fetch media info. |
+| `media-helper.cs` / `media-helper.exe` | Uses the WinRT API `GlobalSystemMediaTransportControlsSessionManager` to fetch the title, artist, album and artwork of the currently playing track, and to send Play/Pause/Next/Prev commands. |
 | `renderer.js` | Refreshes the UI every 2s (stats) and 1.5s (media), handles hover/click to expand or collapse the island, runs the visualizer and marquee effects. |
 
 ---
@@ -138,7 +146,9 @@ Widget **Dynamic Island** cho Windows, mô phỏng giao diện Dynamic Island c�
 
 - Windows 10 hoặc Windows 11
 - [Node.js](https://nodejs.org/) ≥ 18
-- PowerShell (có sẵn trên Windows)
+
+> Không cần PowerShell. Việc nhận diện & điều khiển nhạc dùng helper C# đã biên dịch
+> (`media-helper.exe`), giao tiếp trực tiếp với Windows qua API WinRT.
 
 ---
 
@@ -165,14 +175,20 @@ npm start
 ```
 dynamic-island/
 ├── main.js            # Process chính Electron (tạo cửa sổ, IPC, autostart, media control)
-├── preload.js         # Bridge an toàn giữa Renderer và Node (CPU/RAM, gọi PowerShell)
+├── preload.js         # Bridge an toàn giữa Renderer và Node (CPU/RAM, gọi media-helper)
 ├── renderer.js        # Logic giao diện (expand/collapse, cập nhật stats & media, visualizer)
 ├── index.html         # Giao diện Dynamic Island (compact & expanded)
 ├── style.css          # Toàn bộ styling, hiệu ứng chuyển động
-├── get-media.ps1      # Script PowerShell lấy thông tin bài hát đang phát (WinRT)
+├── media-helper.cs    # Helper C# (WinRT): lấy bài hát đang phát + điều khiển nhạc
+├── media-helper.exe   # File helper đã biên dịch sẵn (dùng lúc chạy)
+├── build-helper.cmd   # Rebuild media-helper.exe bằng csc.exe có sẵn trên Windows
 ├── package.json       # Cấu hình dự án & dependencies
 └── README.md
 ```
+
+> `media-helper.exe` đã được biên dịch sẵn và commit kèm, nên app chạy ngay không cần build.
+> Muốn rebuild bất cứ lúc nào: chạy `build-helper.cmd` (dùng `csc.exe` của .NET Framework
+> có sẵn trên Windows — không cần SDK, không cần PowerShell).
 
 ---
 
@@ -180,9 +196,9 @@ dynamic-island/
 
 | Thành phần | Vai trò |
 |---|---|
-| `main.js` | Tạo cửa sổ Electron trong suốt 480×250, luôn trên cùng, không khung. Nhận lệnh IPC để đóng app, bật autostart, gửi phím điều khiển nhạc. |
-| `preload.js` | Tính toán % CPU (từ `os.cpus()`) và % RAM (từ `os.totalmem()`), thực thi `get-media.ps1` để lấy thông tin nhạc. |
-| `get-media.ps1` | Dùng API WinRT `GlobalSystemMediaTransportControlsSessionManager` để lấy title, artist, album và ảnh bìa của bài hát đang phát trên toàn hệ thống. |
+| `main.js` | Tạo cửa sổ Electron trong suốt 480×250, luôn trên cùng, không khung. Nhận lệnh IPC để đóng app, bật autostart và gửi lệnh điều khiển nhạc (ủy thác cho `media-helper.exe`). |
+| `preload.js` | Tính toán % CPU (từ `os.cpus()`) và % RAM (từ `os.totalmem()`), thực thi `media-helper.exe get` để lấy thông tin nhạc. |
+| `media-helper.cs` / `media-helper.exe` | Dùng API WinRT `GlobalSystemMediaTransportControlsSessionManager` để lấy title, artist, album và ảnh bìa của bài hát đang phát, đồng thời gửi lệnh Play/Pause/Next/Prev. |
 | `renderer.js` | Cập nhật UI mỗi 2s (stats) và 1.5s (media), xử lý hover/click để mở rộng hoặc thu gọn đảo, chạy visualizer và hiệu ứng marquee. |
 
 ---

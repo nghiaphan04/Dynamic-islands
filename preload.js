@@ -1,6 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const os = require('os');
+const path = require('path');
 const { exec } = require('child_process');
+
+const MEDIA_HELPER = path.join(__dirname, 'media-helper.exe');
 
 // Hàm tính toán % CPU sử dụng
 let prevCpuInfo = getCpuAverage();
@@ -35,8 +38,8 @@ function getCpuUsage() {
 
 function getMediaStats() {
   return new Promise((resolve) => {
-    // Chạy script powershell lấy thông tin nhạc đang phát với chế độ Single Threaded Apartment (-STA)
-    exec('powershell -STA -File get-media.ps1', (err, stdout) => {
+    // Gọi helper C# đã biên dịch (media-helper.exe) để lấy thông tin nhạc đang phát (WinRT)
+    exec(`"${MEDIA_HELPER}" get`, (err, stdout) => {
       if (err) {
         resolve({ status: 'stopped' });
         return;

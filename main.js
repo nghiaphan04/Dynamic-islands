@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 
+const MEDIA_HELPER = path.join(__dirname, 'media-helper.exe');
+
 let mainWindow;
 
 function createWindow() {
@@ -65,16 +67,12 @@ function createWindow() {
     app.quit();
   });
 
-  // Điều khiển nhạc (Play/Pause, Next, Prev)
+  // Điều khiển nhạc (Play/Pause, Next, Prev) qua helper C# (media-helper.exe, WinRT)
   ipcMain.on('media-control', (event, action) => {
     const { exec } = require('child_process');
-    let charCode = 0;
-    if (action === 'play') charCode = 179;
-    else if (action === 'next') charCode = 176;
-    else if (action === 'prev') charCode = 177;
-
-    if (charCode > 0) {
-      exec(`powershell -Command "$w = New-Object -ComObject Wscript.Shell; $w.SendKeys([char]${charCode})"`, (err) => {
+    const validActions = ['play', 'next', 'prev'];
+    if (validActions.includes(action)) {
+      exec(`"${MEDIA_HELPER}" ${action}`, (err) => {
         if (err) console.error("Media control error:", err);
       });
     }
