@@ -50,6 +50,12 @@ class MediaHelper
                         SendControl(cmd);
                         Console.WriteLine("{\"ok\":true}");
                         break;
+                    case "seek":
+                        long seekMs = 0;
+                        if (parts.Length > 1 && long.TryParse(parts[1], out seekMs))
+                            SendSeek(seekMs);
+                        Console.WriteLine("{\"ok\":true}");
+                        break;
                     default:
                         Console.WriteLine("{\"status\":\"stopped\"}");
                         break;
@@ -82,6 +88,13 @@ class MediaHelper
         if (command == "play") { AwaitOp(active.TryTogglePlayPauseAsync()); return 0; }
         if (command == "next") { AwaitOp(active.TrySkipNextAsync()); return 0; }
         if (command == "prev") { AwaitOp(active.TrySkipPreviousAsync()); return 0; }
+        if (command == "seek" && args.Length > 1)
+        {
+            long ms = 0;
+            if (long.TryParse(args[1], out ms))
+                AwaitOp(active.TryChangePlaybackPositionAsync(TimeSpan.FromMilliseconds(ms).Ticks));
+            return 0;
+        }
 
         Console.WriteLine(BuildMediaJson(active));
         return 0;
@@ -136,6 +149,20 @@ class MediaHelper
         if (command == "play") AwaitOp(active.TryTogglePlayPauseAsync());
         else if (command == "next") AwaitOp(active.TrySkipNextAsync());
         else if (command == "prev") AwaitOp(active.TrySkipPreviousAsync());
+    }
+
+    static void SendSeek(long positionMs)
+    {
+        var manager = GetManager();
+        if (manager == null) return;
+
+        var sessions = manager.GetSessions();
+        if (sessions == null || sessions.Count == 0) return;
+
+        var active = FindActiveSession(sessions);
+        if (active == null) return;
+
+        AwaitOp(active.TryChangePlaybackPositionAsync(TimeSpan.FromMilliseconds(positionMs).Ticks));
     }
 
     static string BuildMediaJson(GlobalSystemMediaTransportControlsSession active)

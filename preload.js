@@ -131,5 +131,10 @@ contextBridge.exposeInMainWorld('api', {
   // Gửi lệnh điều khiển nhạc qua daemon (không cần qua main process)
   sendMediaControl: (action) => {
     sendMediaCommand(action);
+  },
+
+  // Tua bài hát đến vị trí (ms)
+  sendMediaSeek: (ms) => {
+    sendMediaCommand('seek ' + Math.round(ms));
   }
 });

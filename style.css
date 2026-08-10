@@ -482,6 +482,11 @@ body {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.media-progress-track:hover .media-progress-fill {
+  background: #34c759;
 }
 
 .media-progress-fill {

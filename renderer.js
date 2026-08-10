@@ -64,8 +64,45 @@ function updateMediaProgress(media) {
 
 // Chạy mượt giữa các lần poll (500ms) khi đang phát
 setInterval(() => {
-  if (mediaState.playing && mediaState.duration) renderProgress();
+  if (mediaState.playing && mediaState.duration && !isSeeking) renderProgress();
 }, 500);
+
+// ===== TUA (SEEK) thanh tiến trình =====
+const mediaProgressTrack = document.getElementById('media-progress-track');
+let isSeeking = false;
+let seekPos = 0;
+
+function seekToEvent(e) {
+  if (!mediaState.duration) return;
+  const rect = mediaProgressTrack.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+  seekPos = ratio * mediaState.duration;
+  mediaProgressFill.style.width = `${ratio * 100}%`;
+  mediaTime.textContent = `${formatTime(seekPos)} / ${formatTime(mediaState.duration)}`;
+}
+
+function onSeekMove(e) {
+  if (isSeeking) seekToEvent(e);
+}
+
+function onSeekEnd() {
+  if (!isSeeking) return;
+  isSeeking = false;
+  document.removeEventListener('mousemove', onSeekMove);
+  if (mediaState.duration > 0) {
+    window.api.sendMediaSeek(seekPos);
+  }
+}
+
+mediaProgressTrack.addEventListener('mousedown', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  if (!mediaState.duration) return;
+  isSeeking = true;
+  seekToEvent(e);
+  document.addEventListener('mousemove', onSeekMove);
+  document.addEventListener('mouseup', onSeekEnd, { once: true });
+});
 
 const btnPrev = document.getElementById('btn-prev');
 const btnPlay = document.getElementById('btn-play');
