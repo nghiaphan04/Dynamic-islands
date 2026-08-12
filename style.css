@@ -416,10 +416,10 @@ body {
   gap: 1px;
 }
 
-/* Nút "Thêm ứng dụng" - ô vuông viền nét đứt */
+/* Nút "Thêm ứng dụng" - ô vuông viền nét đứt, đồng bộ với các nút khác */
 #btn-add-app {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 1px dashed rgba(255, 255, 255, 0.4);
   border-radius: 4px;
   color: rgba(255, 255, 255, 0.7);
