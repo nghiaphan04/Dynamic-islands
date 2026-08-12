@@ -413,7 +413,21 @@ body {
 .header-apps {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 1px;
+}
+
+/* Nút "Thêm ứng dụng" - ô vuông viền nét đứt */
+#btn-add-app {
+  width: 20px;
+  height: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+#btn-add-app:hover {
+  border-color: #ffffff;
+  color: #ffffff;
 }
 
 .dock-app {
