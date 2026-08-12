@@ -28,7 +28,17 @@ function followCursorDisplay() {
   if (!mainWindow || islandExpanded) return;
   const cursor = screen.getCursorScreenPoint();
   const display = screen.getDisplayNearestPoint(cursor);
-  if (display.id !== lastFollowDisplayId) {
+
+  // Kiểm tra window có đang nằm trong một màn hình hợp lệ không
+  const bounds = mainWindow.getBounds();
+  const onScreen = screen.getAllDisplays().some((d) => {
+    const a = d.workArea;
+    return bounds.x + bounds.width > a.x && bounds.x < a.x + a.width &&
+           bounds.y + bounds.height > a.y && bounds.y < a.y + a.height;
+  });
+
+  // Kéo về nếu window bị rơi ra ngoài (màn hình cũ đã rút) hoặc chuột đổi màn hình
+  if (!onScreen || display.id !== lastFollowDisplayId) {
     lastFollowDisplayId = display.id;
     moveWindowToDisplay(display);
   }
@@ -256,8 +266,11 @@ app.whenReady().then(() => {
     moveWindowToDisplay(display);
   });
   screen.on('display-removed', (event, display) => {
-    lastFollowDisplayId = screen.getPrimaryDisplay().id;
-    moveWindowToDisplay(screen.getPrimaryDisplay());
+    // Reset để vòng theo dõi tự kéo window về màn hình có chuột
+    lastFollowDisplayId = null;
+  });
+  screen.on('display-metrics-changed', () => {
+    lastFollowDisplayId = null;
   });
 
   // Theo dõi màn hình đang dùng theo vị trí chuột
