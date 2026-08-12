@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Management;
 using System.Text;
 using System.Threading;
 using Microsoft.Win32;
@@ -61,6 +62,9 @@ class MediaHelper
                         WriteResponse("{\"mic\":" + (DeviceInUse("microphone") ? "true" : "false") +
                                       ",\"cam\":" + (DeviceInUse("webcam") ? "true" : "false") + "}");
                         break;
+                    case "monitors":
+                        WriteResponse("{\"external\":" + (ExternalMonitorConnected() ? "true" : "false") + "}");
+                        break;
                     default:
                         WriteResponse("{\"status\":\"stopped\"}");
                         break;
@@ -78,6 +82,12 @@ class MediaHelper
     static int RunOnce(string[] args)
     {
         string command = args.Length > 0 ? args[0].ToLower() : "get";
+
+        if (command == "monitors")
+        {
+            Console.WriteLine("{\"external\":" + (ExternalMonitorConnected() ? "true" : "false") + "}");
+            return 0;
+        }
 
         var manager = GetManager();
         if (manager == null) { OutputStatus("stopped"); return 0; }
@@ -256,6 +266,35 @@ class MediaHelper
         {
             Console.WriteLine(json);
             Console.Out.Flush();
+        }
+    }
+
+    // ===== PHÁT HIỆN MÀN HÌNH NGOÀI ĐANG KẾT NỐI (PnP Status OK) =====
+    // Đáng tin hơn screen.getAllDisplays() của Electron vì Windows có thể giữ
+    // ghost display khi rút màn hình.
+    static bool ExternalMonitorConnected()
+    {
+        try
+        {
+            using (var searcher = new ManagementObjectSearcher(
+                "SELECT Name, Status FROM Win32_PnPEntity WHERE PNPClass='Monitor'"))
+            {
+                foreach (var o in searcher.Get())
+                {
+                    string name = Convert.ToString(o["Name"]) ?? "";
+                    string status = Convert.ToString(o["Status"]) ?? "";
+                    if (string.Equals(status, "OK", StringComparison.OrdinalIgnoreCase) &&
+                        name.IndexOf("Integrated Monitor", StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        catch
+        {
+            return true; // Lỗi truy vấn → mặc định tin Electron (an toàn)
         }
     }
 

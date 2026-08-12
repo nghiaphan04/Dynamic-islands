@@ -13,8 +13,7 @@ app.commandLine.appendSwitch('disable-features', 'BackgroundTracing,SpareRendere
 let mainWindow;
 let islandExpanded = false;
 let moving = false;
-// Khóa tạm sau khi rút màn hình để bỏ qua phantom "display-added"
-let ignoreAddsUntil = 0;
+let lastExternalState = null;
 const WINDOW_WIDTH = 480;
 const WINDOW_HEIGHT = 250;
 
@@ -252,22 +251,34 @@ function uninstallerPath() {
 app.whenReady().then(() => {
   createWindow();
 
-  // Cắm màn hình → đưa đảo sang màn hình mới (nếu không phải phantom)
-  screen.on('display-added', (event, display) => {
-    console.log('[DISPLAY] added', display.id);
-    if (Date.now() < ignoreAddsUntil) {
-      console.log('[DISPLAY] added ignored (cooldown - phantom)');
-      return;
-    }
-    moveWindowToDisplay(display);
-  });
+  // Poll tình trạng màn hình ngoài qua PnP (media-helper.exe monitors) mỗi 2s.
+  // Đáng tin hơn screen.getAllDisplays() vì Windows giữ ghost display khi rút màn hình.
+  const { execFile } = require('child_process');
+  const helperExe = path.join(__dirname, 'media-helper.exe');
 
-  // Rút màn hình → kéo ngay về màn hình chính + khóa phantom 5s
-  screen.on('display-removed', () => {
-    console.log('[DISPLAY] removed');
-    ignoreAddsUntil = Date.now() + 5000;
-    moveWindowToDisplay(screen.getPrimaryDisplay());
-  });
+  function checkExternalMonitor(cb) {
+    execFile(helperExe, ['monitors'], { timeout: 3000 }, (err, stdout) => {
+      try { cb(!!JSON.parse(stdout.trim()).external); }
+      catch (err2) { cb(true); }
+    });
+  }
+
+  function pollMonitors() {
+    if (!mainWindow || islandExpanded || moving) return;
+    checkExternalMonitor((ext) => {
+      if (ext === lastExternalState) return;
+      lastExternalState = ext;
+      if (ext) {
+        const primary = screen.getPrimaryDisplay();
+        const external = screen.getAllDisplays().find((d) => d.id !== primary.id);
+        moveWindowToDisplay(external || primary);
+      } else {
+        moveWindowToDisplay(screen.getPrimaryDisplay());
+      }
+    });
+  }
+
+  setInterval(pollMonitors, 2000);
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
