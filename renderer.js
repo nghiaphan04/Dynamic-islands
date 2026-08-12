@@ -440,7 +440,7 @@ window.api.getAutostart().then((enabled) => {
 // ==========================================
 const appDock = document.getElementById('app-dock');
 const sepApps = document.getElementById('sep-apps');
-const MAX_DOCK_APPS = 14;
+const MAX_DOCK_APPS = 13;
 let dockApps = [];
 
 function updateAddButtonState() {
