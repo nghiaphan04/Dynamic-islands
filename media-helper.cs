@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Windows.Devices.Enumeration;
 using Windows.Foundation;
 using Windows.Media.Control;
 using Windows.Storage.Streams;
@@ -32,6 +33,7 @@ class MediaHelper
     // Chế độ nền: đọc lệnh từ stdin (get/play/next/prev), trả JSON theo từng dòng
     static int RunDaemon()
     {
+        StartAudioWatcher();
         string line;
         while ((line = Console.ReadLine()) != null)
         {
@@ -243,6 +245,74 @@ class MediaHelper
     static void OutputStatus(string status)
     {
         Console.WriteLine("{\"status\":\"" + status + "\"}");
+    }
+
+    // ===== THEO DÕI THIẾT BỊ ÂM THANH (tai nghe/loa) =====
+    static readonly object _outLock = new object();
+    static readonly object _audioLock = new object();
+    static readonly HashSet<string> _knownAudio = new HashSet<string>();
+    static readonly Dictionary<string, string> _audioNames = new Dictionary<string, string>();
+    static bool _audioEnumerated;
+
+    static void WriteEvent(string json)
+    {
+        lock (_outLock)
+        {
+            Console.WriteLine("EVENT " + json);
+            Console.Out.Flush();
+        }
+    }
+
+    static string GuessAudioKind(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "other";
+        string n = name.ToLower();
+        if (n.Contains("headphone") || n.Contains("earbud") || n.Contains("earphone") ||
+            n.Contains("airpods") || n.Contains("bluetooth") || n.Contains("wireless"))
+            return n.Contains("speaker") ? "speaker" : "headphone";
+        if (n.Contains("speaker") || n.Contains("soundbar")) return "speaker";
+        return "other";
+    }
+
+    static void StartAudioWatcher()
+    {
+        try
+        {
+            var watcher = DeviceInformation.CreateWatcher(DeviceClass.AudioRender);
+            watcher.Added += (s, d) =>
+            {
+                bool isNew;
+                lock (_audioLock)
+                {
+                    _audioNames[d.Id] = d.Name;
+                    isNew = !_knownAudio.Contains(d.Id);
+                    if (isNew) _knownAudio.Add(d.Id);
+                }
+                if (isNew && _audioEnumerated)
+                    WriteEvent("{\"type\":\"audio\",\"action\":\"added\",\"name\":\"" +
+                               JsonEscape(d.Name) + "\",\"kind\":\"" + GuessAudioKind(d.Name) + "\"}");
+            };
+            watcher.Removed += (s, u) =>
+            {
+                bool known;
+                string name = null;
+                lock (_audioLock)
+                {
+                    known = _knownAudio.Remove(u.Id);
+                    _audioNames.TryGetValue(u.Id, out name);
+                    _audioNames.Remove(u.Id);
+                }
+                if (known && _audioEnumerated)
+                    WriteEvent("{\"type\":\"audio\",\"action\":\"removed\",\"name\":\"" +
+                               JsonEscape(name ?? "Audio device") + "\",\"kind\":\"other\"}");
+            };
+            watcher.EnumerationCompleted += (s, e) =>
+            {
+                lock (_audioLock) _audioEnumerated = true;
+            };
+            watcher.Start();
+        }
+        catch { }
     }
 
     static T AwaitOp<T>(IAsyncOperation<T> op)

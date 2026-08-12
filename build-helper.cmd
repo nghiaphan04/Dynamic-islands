@@ -18,6 +18,7 @@ set WINMD=%WINDIR%\System32\WinMetadata
   /r:"%WINDIR%\Microsoft.NET\assembly\GAC_MSIL\System.Runtime\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Runtime.dll" ^
   /r:"%WINMD%\Windows.Media.winmd" ^
   /r:"%WINMD%\Windows.Storage.winmd" ^
+  /r:"%WINMD%\Windows.Devices.winmd" ^
   /r:"%WINMD%\Windows.Foundation.winmd" ^
   media-helper.cs
 

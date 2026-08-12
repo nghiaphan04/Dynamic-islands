@@ -223,6 +223,18 @@ body {
   color: #ff9f0a; /* Màu cam nổi bật nhẹ */
 }
 
+/* Icon thiết bị khi có tai nghe/loa/màn hình kết nối */
+.compact-left .device-flash {
+  display: inline-flex;
+  align-items: center;
+}
+
+.compact-left .device-flash svg {
+  width: 13px;
+  height: 13px;
+  margin-right: 4px;
+}
+
 .compact-right {
   color: #30d158; /* Màu xanh lá hệ thống */
 }
