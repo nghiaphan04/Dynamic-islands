@@ -48,6 +48,10 @@ function createWindow() {
   // Đưa cửa sổ lên trên cùng
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
+  // Không nhận focus: click ra ngoài sẽ không làm cửa sổ mất focus
+  // → tránh flicker đen (window trong suốt render phần mềm) khi click ngoài
+  mainWindow.setFocusable(false);
+
   // Bắt đầu chế độ click xuyên qua các phần trong suốt
   mainWindow.setIgnoreMouseEvents(true, { forward: true });
 

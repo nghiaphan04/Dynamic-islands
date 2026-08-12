@@ -477,9 +477,8 @@ window.api.canUninstall().then((ok) => {
 
 btnUninstall.addEventListener('click', (e) => {
   e.stopPropagation();
-  if (confirm(t.uninstallConfirm)) {
-    window.api.uninstallApp();
-  }
+  // NSIS uninstaller tự hiện hộp thoại xác nhận, không cần confirm() của trình duyệt
+  window.api.uninstallApp();
 });
 
 // Load trạng thái tự khởi động ban đầu
