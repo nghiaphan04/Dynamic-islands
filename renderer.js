@@ -313,6 +313,16 @@ async function pollPointer() {
 
 setInterval(pollPointer, 150);
 
+// Fade in/out khi đảo chuyển màn hình (chỉ opacity, không transform → không ghost)
+function playIslandFade(cls) {
+  island.classList.remove('island-fade-out', 'island-fade-in');
+  void island.offsetWidth;
+  island.classList.add(cls);
+}
+
+window.api.onIslandLeaving(() => playIslandFade('island-fade-out'));
+window.api.onIslandMoved(() => playIslandFade('island-fade-in'));
+
 
 // ==========================================
 // 2. CO GIÃN ĐẢO (EXPAND / COLLAPSE)

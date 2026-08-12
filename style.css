@@ -66,6 +66,25 @@ body {
   z-index: 1;
 }
 
+/* Fade in/out khi đảo chuyển màn hình */
+.island-fade-out {
+  animation: islandFadeOut 0.2s ease forwards;
+}
+
+.island-fade-in {
+  animation: islandFadeIn 0.35s ease forwards;
+}
+
+@keyframes islandFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes islandFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Trạng thái thu gọn (Compact) */
 #island.compact {
   width: 170px;

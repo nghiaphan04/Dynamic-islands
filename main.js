@@ -12,22 +12,30 @@ app.commandLine.appendSwitch('disable-features', 'BackgroundTracing,SpareRendere
 
 let mainWindow;
 let islandExpanded = false;
+let moving = false;
 
 const WINDOW_WIDTH = 480;
 const WINDOW_HEIGHT = 250;
 
 function moveWindowToDisplay(display) {
-  if (!mainWindow || !display) return;
+  if (!mainWindow || !display || moving) return;
   const { x, y, width } = display.workArea;
   const nx = Math.round(x + (width - WINDOW_WIDTH) / 2);
   const ny = y + 10;
   const cur = mainWindow.getBounds();
-  // Chỉ di chuyển + animate khi vị trí thực sự khác (tránh lặp gây nháy)
+  // Chỉ di chuyển khi vị trí thực sự khác (tránh lặp gây nháy)
   if (Math.abs(cur.x - nx) > 2 || Math.abs(cur.y - ny) > 2) {
-    mainWindow.setPosition(nx, ny);
-    // Re-assert kích thước DIP: khi đổi màn hình khác DPI, Windows tự resize window
-    // khiến đảo bị lệch/clip → set lại đúng 480×250
-    mainWindow.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    moving = true;
+    // Fade-out → di chuyển → fade-in
+    mainWindow.webContents.send('island-leaving');
+    setTimeout(() => {
+      mainWindow.setPosition(nx, ny);
+      // Re-assert kích thước DIP: khi đổi màn hình khác DPI, Windows tự resize window
+      // khiến đảo bị lệch/clip → set lại đúng 480×250
+      mainWindow.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+      mainWindow.webContents.send('island-moved');
+      moving = false;
+    }, 200);
   }
 }
 
