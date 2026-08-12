@@ -161,22 +161,6 @@ function uninstallerPath() {
 app.whenReady().then(() => {
   createWindow();
 
-  // Theo dõi màn hình ngoài cắm vào/ra
-  screen.on('display-added', (event, display) => {
-    if (mainWindow) {
-      mainWindow.webContents.send('device-event', {
-        type: 'monitor', action: 'added', name: display.label || 'Display'
-      });
-    }
-  });
-  screen.on('display-removed', (event, display) => {
-    if (mainWindow) {
-      mainWindow.webContents.send('device-event', {
-        type: 'monitor', action: 'removed', name: display.label || 'Display'
-      });
-    }
-  });
-
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

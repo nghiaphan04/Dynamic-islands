@@ -276,61 +276,13 @@ function updateTime() {
   // Compact mode đã dùng CPU% thay cho giờ
 }
 
-// ==========================================
-// THIẾT BỊ NGOÀI - flash icon thay CPU 3 giây khi có thiết bị kết nối
-// ==========================================
-let flashTimer = null;
-let flashActive = false;
-
-function deviceIcon(ev) {
-  const c = 'currentColor';
-  if (ev.type === 'monitor') {
-    return `<svg viewBox="0 0 24 24" fill="${c}" width="13" height="13"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>`;
-  }
-  if (ev.kind === 'headphone') {
-    return `<svg viewBox="0 0 24 24" fill="${c}" width="13" height="13"><path d="M12 3a9 9 0 0 0-9 9v7a2 2 0 0 0 2 2h3v-8H5v-1a7 7 0 0 1 14 0v1h-3v8h3a2 2 0 0 0 2-2v-7a9 9 0 0 0-9-9z"/></svg>`;
-  }
-  return `<svg viewBox="0 0 24 24" fill="${c}" width="13" height="13"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>`;
-}
-
-function flashCompactDevice(svg, name) {
-  // Đang phát nhạc: compact hiện marquee nên flash ở ô RAM bên phải thay vì CPU
-  const mediaMode = island.classList.contains('has-media');
-  const target = mediaMode ? compactRamMedia : compactTime;
-  flashActive = true;
-  target.innerHTML = svg;
-  target.title = name || '';
-  // Remove rồi re-add class để restart animation nếu có thiết bị mới cắm giữa chừng
-  target.classList.remove('device-flash');
-  void target.offsetWidth;
-  target.classList.add('device-flash');
-  if (flashTimer) clearTimeout(flashTimer);
-  flashTimer = setTimeout(() => {
-    flashActive = false;
-    target.classList.remove('device-flash');
-    target.innerHTML = '';
-    target.title = '';
-    updateStats();
-  }, 3100);
-}
-
-window.api.onDeviceEvent((ev) => {
-  if (!ev || ev.action !== 'added') return;
-  // Chỉ flash khi kết nối tai nghe (âm thanh) hoặc màn hình ngoài
-  if (ev.type === 'audio' && ev.kind !== 'headphone') return;
-  flashCompactDevice(deviceIcon(ev), ev.name || '');
-});
-
-
 // Cập nhật thông số CPU/RAM
 function updateStats() {
   const stats = window.api.getSystemStats();
   
   // View thu gọn - CPU% thay thế giờ, RAM bên phải
-  if (!flashActive) {
-    compactTime.textContent = `CPU ${stats.cpu}%`;
-    compactRamMedia.textContent = `${stats.ram}%`;
-  }
+  compactTime.textContent = `CPU ${stats.cpu}%`;
+  compactRamMedia.textContent = `${stats.ram}%`;
   compactRam.textContent = `RAM ${stats.ram}%`;
 
   // Đổi màu RAM ở chế độ thu gọn đang phát nhạc (xám → cam ≥60% → đỏ ≥85%)

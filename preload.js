@@ -64,12 +64,6 @@ function spawnMediaDaemon() {
     while ((idx = lineBuffer.indexOf('\n')) >= 0) {
       const line = lineBuffer.slice(0, idx).trim();
       lineBuffer = lineBuffer.slice(idx + 1);
-      // Dòng sự kiện thiết bị (không phải phản hồi lệnh)
-      if (line.startsWith('EVENT ')) {
-        try { dispatchDeviceEvent(JSON.parse(line.slice(6))); }
-        catch (e) { /* bỏ qua dòng lỗi */ }
-        continue;
-      }
       const resolve = pendingResolvers.shift();
       if (resolve && line) {
         try { resolve(JSON.parse(line)); }
@@ -78,12 +72,6 @@ function spawnMediaDaemon() {
     }
   });
 }
-
-let deviceListener = null;
-function dispatchDeviceEvent(data) {
-  if (deviceListener) deviceListener(data);
-}
-ipcRenderer.on('device-event', (event, data) => dispatchDeviceEvent(data));
 
 function sendMediaCommand(cmd) {
   return new Promise((resolve) => {
@@ -122,9 +110,6 @@ contextBridge.exposeInMainWorld('api', {
   launchApp: (exePath) => ipcRenderer.invoke('launch-app', exePath),
   getApps: () => ipcRenderer.invoke('get-apps'),
   saveApps: (apps) => ipcRenderer.send('save-apps', apps),
-
-  // Sự kiện thiết bị ngoài (tai nghe/loa/màn hình)
-  onDeviceEvent: (cb) => { deviceListener = cb; },
 
   // Đóng app
   closeApp: () => ipcRenderer.send('close-app'),

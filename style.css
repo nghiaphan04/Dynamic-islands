@@ -226,29 +226,6 @@ body {
   color: #ff9f0a; /* Màu cam nổi bật nhẹ */
 }
 
-/* Icon thiết bị khi có tai nghe/loa/màn hình/sạc kết nối */
-.device-flash {
-  display: inline-flex;
-  align-items: center;
-  animation: deviceFlash 3s ease forwards;
-}
-
-.device-flash svg {
-  width: 13px;
-  height: 13px;
-}
-
-.compact-left .device-flash svg {
-  margin-right: 4px;
-}
-
-@keyframes deviceFlash {
-  0% { opacity: 0; }
-  10% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
 .compact-right {
   color: #30d158; /* Màu xanh lá hệ thống */
 }
