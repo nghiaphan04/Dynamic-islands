@@ -59,7 +59,7 @@ class MediaHelper
                         break;
                     case "privacy":
                         WriteResponse("{\"mic\":" + (DeviceInUse("microphone") ? "true" : "false") +
-                                      ",\"cam\":" + (DeviceInUse("camera") ? "true" : "false") + "}");
+                                      ",\"cam\":" + (DeviceInUse("webcam") ? "true" : "false") + "}");
                         break;
                     default:
                         WriteResponse("{\"status\":\"stopped\"}");
