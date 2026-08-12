@@ -5,6 +5,10 @@ const fs = require('fs');
 // Tắt tăng tốc GPU để bỏ process GPU, giảm đáng kể bộ nhớ (đảo nhỏ, ít animation nên OK)
 app.disableHardwareAcceleration();
 
+// Giảm bộ nhớ renderer: giới hạn heap V8 (app rất nhẹ), tắt các tiến trình/tính năng không cần
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=96 --max-semi-space-size=4');
+app.commandLine.appendSwitch('disable-features', 'BackgroundTracing,SpareRendererForSitePerProcess,CalculateNativeWinOcclusion');
+
 let mainWindow;
 
 function createWindow() {
