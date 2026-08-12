@@ -44,14 +44,19 @@ function moveWindowToDisplay(display) {
 // xử lý tốt cả trường hợp rút hẳn dây lẫn tắt nguồn màn hình rời (Windows
 // vẫn liệt kê ghost display trong getAllDisplays).
 function followCursorDisplay() {
-  if (!mainWindow || islandExpanded) return;
+  if (!mainWindow || islandExpanded || moving) return;
   const cursor = screen.getCursorScreenPoint();
   const target = screen.getDisplayNearestPoint(cursor);
   const bounds = mainWindow.getBounds();
-  const center = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
-  const current = screen.getDisplayNearestPoint(center);
-  if (target.id !== current.id) {
-    console.log('[DISPLAY] follow cursor ->', target.id, '(was', current.id + ')');
+  // Kiểm tra tâm window có nằm trong màn hình mục tiêu không (theo toạ độ).
+  // Nếu không → kéo về. Xử lý được trường hợp window kẹt ngoài màn hình sau khi
+  // rút màn hình cũ (getDisplayNearestPoint vẫn trả về màn hình gần nhất).
+  const ta = target.workArea;
+  const cx = bounds.x + bounds.width / 2;
+  const cy = bounds.y + bounds.height / 2;
+  const inside = cx >= ta.x && cx <= ta.x + ta.width && cy >= ta.y && cy <= ta.y + ta.height;
+  if (!inside) {
+    console.log('[DISPLAY] recentering on cursor display', target.id);
     moveWindowToDisplay(target);
   }
 }
