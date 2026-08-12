@@ -142,6 +142,7 @@ function applyBackground(bg) {
   settings.background = bg || null;
   bgVideo.pause();
   bgVideo.removeAttribute('src');
+  bgVideo.load();
   bgVideo.classList.remove('visible');
 
   if (!bg) {
