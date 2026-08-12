@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Windows.Devices.Enumeration;
@@ -34,6 +35,7 @@ class MediaHelper
     static int RunDaemon()
     {
         StartAudioWatcher();
+        StartPowerWatcher();
         string line;
         while ((line = Console.ReadLine()) != null)
         {
@@ -44,31 +46,29 @@ class MediaHelper
                 switch (cmd)
                 {
                     case "get":
-                        Console.WriteLine(GetMediaJson());
+                        WriteResponse(GetMediaJson());
                         break;
                     case "play":
                     case "next":
                     case "prev":
                         SendControl(cmd);
-                        Console.WriteLine("{\"ok\":true}");
+                        WriteResponse("{\"ok\":true}");
                         break;
                     case "seek":
                         long seekMs = 0;
                         if (parts.Length > 1 && long.TryParse(parts[1], out seekMs))
                             SendSeek(seekMs);
-                        Console.WriteLine("{\"ok\":true}");
+                        WriteResponse("{\"ok\":true}");
                         break;
                     default:
-                        Console.WriteLine("{\"status\":\"stopped\"}");
+                        WriteResponse("{\"status\":\"stopped\"}");
                         break;
                 }
-                Console.Out.Flush();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("{\"status\":\"error\",\"message\":\"" +
-                                  JsonEscape(ex.Message) + "\"}");
-                Console.Out.Flush();
+                WriteResponse("{\"status\":\"error\",\"message\":\"" +
+                              JsonEscape(ex.Message) + "\"}");
             }
         }
         return 0;
@@ -263,6 +263,15 @@ class MediaHelper
         }
     }
 
+    static void WriteResponse(string json)
+    {
+        lock (_outLock)
+        {
+            Console.WriteLine(json);
+            Console.Out.Flush();
+        }
+    }
+
     static string GuessAudioKind(string name)
     {
         if (string.IsNullOrEmpty(name)) return "other";
@@ -313,6 +322,57 @@ class MediaHelper
             watcher.Start();
         }
         catch { }
+    }
+
+    // ===== THEO DÕI SẠC (AC power) =====
+    [DllImport("kernel32.dll")]
+    static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS sps);
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct SYSTEM_POWER_STATUS
+    {
+        public byte ACLineStatus;      // 0 = pin, 1 = cắm sạc, 255 = unknown
+        public byte BatteryFlag;
+        public byte BatteryLifePercent;
+        public byte Reserved1;
+        public uint BatteryLifeTime;
+        public uint BatteryFullLifeTime;
+    }
+
+    static int _lastAcline = -1;
+
+    static void StartPowerWatcher()
+    {
+        Thread t = new Thread(() =>
+        {
+            while (true)
+            {
+                try
+                {
+                    SYSTEM_POWER_STATUS sps;
+                    if (GetSystemPowerStatus(out sps))
+                    {
+                        int ac = sps.ACLineStatus;
+                        if (_lastAcline == -1)
+                        {
+                            _lastAcline = ac;
+                        }
+                        else if (ac != _lastAcline)
+                        {
+                            _lastAcline = ac;
+                            if (ac == 1)
+                                WriteEvent("{\"type\":\"power\",\"action\":\"added\",\"name\":\"Charger\",\"kind\":\"charging\"}");
+                            else if (ac == 0)
+                                WriteEvent("{\"type\":\"power\",\"action\":\"removed\",\"name\":\"Charger\",\"kind\":\"discharging\"}");
+                        }
+                    }
+                }
+                catch { }
+                Thread.Sleep(1500);
+            }
+        });
+        t.IsBackground = true;
+        t.Start();
     }
 
     static T AwaitOp<T>(IAsyncOperation<T> op)

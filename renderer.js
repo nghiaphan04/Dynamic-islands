@@ -148,7 +148,8 @@ const I18N = {
     noArtist: 'Không rõ ca sĩ',
     uninstallConfirm: 'Gỡ cài đặt Dynamic Island khỏi máy này?',
     addAppTitle: 'Thêm ứng dụng',
-    removeAppTitle: 'Xóa khỏi dock'
+    removeAppTitle: 'Xóa khỏi dock',
+    powerTitle: 'Đang sạc'
   },
   en: {
     playTitle: 'Play / Pause',
@@ -164,7 +165,8 @@ const I18N = {
     noArtist: 'Unknown artist',
     uninstallConfirm: 'Uninstall Dynamic Island from this machine?',
     addAppTitle: 'Add application',
-    removeAppTitle: 'Remove from dock'
+    removeAppTitle: 'Remove from dock',
+    powerTitle: 'Charging'
   }
 };
 
@@ -284,6 +286,9 @@ let flashActive = false;
 
 function deviceIcon(ev) {
   const c = 'currentColor';
+  if (ev.type === 'power') {
+    return `<svg viewBox="0 0 24 24" fill="#30d158" width="13" height="13"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>`;
+  }
   if (ev.type === 'monitor') {
     return `<svg viewBox="0 0 24 24" fill="${c}" width="13" height="13"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>`;
   }
@@ -312,7 +317,8 @@ function flashCompactDevice(svg, name) {
 
 window.api.onDeviceEvent((ev) => {
   if (!ev || ev.action !== 'added') return;
-  flashCompactDevice(deviceIcon(ev), ev.name || '');
+  const name = ev.type === 'power' ? t.powerTitle : (ev.name || '');
+  flashCompactDevice(deviceIcon(ev), name);
 });
 
 
