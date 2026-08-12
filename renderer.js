@@ -205,7 +205,6 @@ const I18N = {
     taskmgrTitle: 'Mở Task Manager',
     uninstallTitle: 'Gỡ cài đặt Dynamic Island',
     autostartLabel: 'Tự khởi động cùng Windows',
-    islandTitle: 'Nhấp chuột để mở rộng',
     noMusic: 'Không có nhạc',
     stopped: 'Dừng',
     noTitle: 'Không có tiêu đề',
@@ -225,7 +224,6 @@ const I18N = {
     taskmgrTitle: 'Open Task Manager',
     uninstallTitle: 'Uninstall Dynamic Island',
     autostartLabel: 'Launch at startup',
-    islandTitle: 'Click to expand',
     noMusic: 'No music',
     stopped: 'Stopped',
     noTitle: 'No title',
@@ -251,7 +249,6 @@ function applyI18n() {
   btnAddApp.title = t.addAppTitle;
   btnBg.title = t.bgTitle;
   autostartLabel.textContent = t.autostartLabel;
-  island.title = t.islandTitle;
   mediaTitle.textContent = t.noMusic;
   mediaArtist.textContent = t.stopped;
   compactMediaTitle.textContent = t.noMusic;
