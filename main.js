@@ -15,7 +15,6 @@ let islandExpanded = false;
 let moving = false;
 // Khóa tạm sau khi rút màn hình để bỏ qua phantom "display-added"
 let ignoreAddsUntil = 0;
-
 const WINDOW_WIDTH = 480;
 const WINDOW_HEIGHT = 250;
 
@@ -38,29 +37,6 @@ function moveWindowToDisplay(display) {
       mainWindow.webContents.send('island-moved');
       moving = false;
     }, 200);
-  }
-}
-
-// Đưa đảo (khi thu gọn) về màn hình đang có con chuột.
-// Cách này đáng tin nhất: con chuột luôn ở màn hình thật, hiển thị được —
-// xử lý tốt cả trường hợp rút hẳn dây lẫn tắt nguồn màn hình rời (Windows
-// vẫn liệt kê ghost display trong getAllDisplays).
-function followCursorDisplay() {
-  if (!mainWindow || islandExpanded || moving) return;
-  if (Date.now() < ignoreAddsUntil) return;
-  const cursor = screen.getCursorScreenPoint();
-  const target = screen.getDisplayNearestPoint(cursor);
-  const bounds = mainWindow.getBounds();
-  // Kiểm tra tâm window có nằm trong màn hình mục tiêu không (theo toạ độ).
-  // Nếu không → kéo về. Xử lý được trường hợp window kẹt ngoài màn hình sau khi
-  // rút màn hình cũ (getDisplayNearestPoint vẫn trả về màn hình gần nhất).
-  const ta = target.workArea;
-  const cx = bounds.x + bounds.width / 2;
-  const cy = bounds.y + bounds.height / 2;
-  const inside = cx >= ta.x && cx <= ta.x + ta.width && cy >= ta.y && cy <= ta.y + ta.height;
-  if (!inside) {
-    console.log('[DISPLAY] recentering on cursor display', target.id);
-    moveWindowToDisplay(target);
   }
 }
 
@@ -276,28 +252,22 @@ function uninstallerPath() {
 app.whenReady().then(() => {
   createWindow();
 
-  // Cắm/rút màn hình → tự cập nhật vị trí theo màn hình có chuột
-  screen.on('display-added', () => {
-    console.log('[DISPLAY] added');
-    // Bỏ qua phantom added ngay sau khi rút (Windows re-detect thoáng)
+  // Cắm màn hình → đưa đảo sang màn hình mới (nếu không phải phantom)
+  screen.on('display-added', (event, display) => {
+    console.log('[DISPLAY] added', display.id);
     if (Date.now() < ignoreAddsUntil) {
-      console.log('[DISPLAY] added ignored (cooldown)');
+      console.log('[DISPLAY] added ignored (cooldown - phantom)');
       return;
     }
-    followCursorDisplay();
+    moveWindowToDisplay(display);
   });
+
+  // Rút màn hình → kéo ngay về màn hình chính + khóa phantom 5s
   screen.on('display-removed', () => {
     console.log('[DISPLAY] removed');
-    // Khóa phantom 5s + kéo ngay về màn hình chính
     ignoreAddsUntil = Date.now() + 5000;
     moveWindowToDisplay(screen.getPrimaryDisplay());
   });
-  screen.on('display-metrics-changed', () => {
-    followCursorDisplay();
-  });
-
-  // Theo dõi liên tục (500ms) để đảo đi theo màn hình đang dùng
-  setInterval(followCursorDisplay, 500);
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
