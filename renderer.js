@@ -130,28 +130,11 @@ const btnTaskmgr = document.getElementById('btn-taskmgr');
 const chkAutostart = document.getElementById('chk-autostart');
 const autostartLabel = document.getElementById('switch-label');
 const btnBg = document.getElementById('btn-bg');
-const btnTheme = document.getElementById('btn-theme');
 
 // ==========================================
-// TÙY CHỈNH NỀN & THEME
+// TÙY CHỈNH ẢNH NỀN
 // ==========================================
-const THEMES = [
-  { accentCpu: '#ff9f0a', accentRam: '#30d158' },
-  { accentCpu: '#0a84ff', accentRam: '#5e5ce6' },
-  { accentCpu: '#bf5af2', accentRam: '#64d2ff' },
-  { accentCpu: '#ff375f', accentRam: '#ffd60a' },
-  { accentCpu: '#63e6e2', accentRam: '#34c759' },
-  { accentCpu: '#ffffff', accentRam: '#ffffff' }
-];
-
-let settings = { background: null, themeIndex: 0 };
-
-function applyTheme(index) {
-  settings.themeIndex = index;
-  const th = THEMES[index] || THEMES[0];
-  island.style.setProperty('--accent-cpu', th.accentCpu);
-  island.style.setProperty('--accent-ram', th.accentRam);
-}
+let settings = { background: null };
 
 function applyBackground(bgUrl) {
   settings.background = bgUrl || null;
@@ -172,8 +155,7 @@ function saveSettings() {
 
 function loadSettings() {
   window.api.getSettings().then((s) => {
-    settings = Object.assign({ background: null, themeIndex: 0 }, s || {});
-    applyTheme(settings.themeIndex);
+    settings = Object.assign({ background: null }, s || {});
     if (settings.background) applyBackground(settings.background);
   }).catch(() => {});
 }
@@ -185,12 +167,6 @@ btnBg.addEventListener('click', async (e) => {
     applyBackground(bg);
     saveSettings();
   }
-});
-
-btnTheme.addEventListener('click', (e) => {
-  e.stopPropagation();
-  applyTheme((settings.themeIndex + 1) % THEMES.length);
-  saveSettings();
 });
 
 // ==========================================
@@ -215,8 +191,7 @@ const I18N = {
     privacyMic: 'Đang sử dụng micro',
     privacyCam: 'Đang sử dụng camera',
     privacyBoth: 'Đang sử dụng micro & camera',
-    bgTitle: 'Chọn ảnh nền',
-    themeTitle: 'Đổi theme màu'
+    bgTitle: 'Chọn ảnh nền'
   },
   en: {
     playTitle: 'Play / Pause',
@@ -236,8 +211,7 @@ const I18N = {
     privacyMic: 'Microphone in use',
     privacyCam: 'Camera in use',
     privacyBoth: 'Microphone & camera in use',
-    bgTitle: 'Choose background image',
-    themeTitle: 'Change theme color'
+    bgTitle: 'Choose background image'
   }
 };
 
@@ -251,7 +225,6 @@ function applyI18n() {
   btnUninstall.title = t.uninstallTitle;
   btnAddApp.title = t.addAppTitle;
   btnBg.title = t.bgTitle;
-  btnTheme.title = t.themeTitle;
   autostartLabel.textContent = t.autostartLabel;
   island.title = t.islandTitle;
   mediaTitle.textContent = t.noMusic;
