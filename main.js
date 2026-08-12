@@ -61,6 +61,11 @@ function createWindow() {
     mainWindow.setIgnoreMouseEvents(ignore, options);
   });
 
+  // Lấy vị trí chuột toàn màn hình (đơn vị DIP, khớp CSS pixel)
+  ipcMain.handle('get-cursor-pos', () => {
+    return screen.getCursorScreenPoint();
+  });
+
   // Tự động khởi động cùng Windows
   ipcMain.on('set-autostart', (event, enable) => {
     app.setLoginItemSettings({

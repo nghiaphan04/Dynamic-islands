@@ -272,56 +272,49 @@ let collapseTimeout = null;
 // ==========================================
 // 1. QUẢN LÝ TƯƠNG TÁC CHUỘT XUYÊN THẤU (CLICK-THROUGH) VÀ HOVER
 // ==========================================
-// Kiểm tra vị trí chuột liên tục trên màn hình để bật/tắt click xuyên thấu
-// Đồng thời điều khiển hover (scale) và đếm ngược tự thu nhỏ bằng toạ độ,
-// không dựa vào :hover/mouseleave vì cửa sổ không nhận focus có thể làm chúng kẹt.
-document.addEventListener('mousemove', (e) => {
+// Poll vị trí chuột thật từ main process (screen.getCursorScreenPoint) mỗi 150ms.
+// Không dựa vào :hover/mouseleave/forward-event vì cửa sổ không nhận focus
+// khiến các cơ chế đó bị kẹt → scale hover không trả về, auto-collapse hỏng.
+function computeOverIsland(cursor) {
   const rect = island.getBoundingClientRect();
-  
-  // Thêm 6px biên an toàn cho bóng đổ (box-shadow) để tránh bị mất tương tác
-  const isOverIsland = (
-    e.clientX >= rect.left - 6 &&
-    e.clientX <= rect.right + 6 &&
-    e.clientY >= rect.top - 6 &&
-    e.clientY <= rect.bottom + 6
+  const sx = rect.left + window.screenX;
+  const sy = rect.top + window.screenY;
+  return (
+    cursor.x >= sx - 6 &&
+    cursor.x <= sx + rect.width + 6 &&
+    cursor.y >= sy - 6 &&
+    cursor.y <= sy + rect.height + 6
   );
+}
 
-  if (isOverIsland) {
-    island.classList.add('hovered');
-    window.api.setIgnoreMouseEvents(false);
-    if (collapseTimeout) {
-      clearTimeout(collapseTimeout);
-      collapseTimeout = null;
-    }
-  } else {
-    island.classList.remove('hovered');
-    // Cho phép click xuyên qua nếu di chuột ra ngoài hòn đảo thực tế
-    window.api.setIgnoreMouseEvents(true, { forward: true });
-    // Tự động thu nhỏ sau 2 giây nếu đang mở rộng
-    if (isExpanded && !collapseTimeout) {
-      collapseTimeout = setTimeout(() => {
+async function pollPointer() {
+  try {
+    const cursor = await window.api.getCursorPos();
+    const over = computeOverIsland(cursor);
+
+    if (over) {
+      island.classList.add('hovered');
+      window.api.setIgnoreMouseEvents(false);
+      if (collapseTimeout) {
+        clearTimeout(collapseTimeout);
         collapseTimeout = null;
-        collapseIsland();
-      }, 2000);
+      }
+    } else {
+      island.classList.remove('hovered');
+      // Cho phép click xuyên qua nếu di chuột ra ngoài hòn đảo thực tế
+      window.api.setIgnoreMouseEvents(true, { forward: true });
+      // Tự động thu nhỏ sau 2 giây nếu đang mở rộng
+      if (isExpanded && !collapseTimeout) {
+        collapseTimeout = setTimeout(() => {
+          collapseTimeout = null;
+          collapseIsland();
+        }, 2000);
+      }
     }
-  }
-});
+  } catch (e) { /* bỏ qua */ }
+}
 
-island.addEventListener('mouseenter', () => {
-  if (collapseTimeout) {
-    clearTimeout(collapseTimeout);
-    collapseTimeout = null;
-  }
-});
-
-island.addEventListener('mouseleave', () => {
-  if (isExpanded && !collapseTimeout) {
-    collapseTimeout = setTimeout(() => {
-      collapseTimeout = null;
-      collapseIsland();
-    }, 2000);
-  }
-});
+setInterval(pollPointer, 150);
 
 
 // ==========================================
