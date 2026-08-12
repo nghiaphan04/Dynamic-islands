@@ -12,7 +12,6 @@ app.commandLine.appendSwitch('disable-features', 'BackgroundTracing,SpareRendere
 
 let mainWindow;
 let islandExpanded = false;
-let lastFollowDisplayId = null;
 
 const WINDOW_WIDTH = 480;
 const WINDOW_HEIGHT = 250;
@@ -26,19 +25,19 @@ function moveWindowToDisplay(display) {
   mainWindow.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
-// Chọn màn hình hiển thị: ưu tiên màn hình rời, nếu không có thì màn hình chính
-function pickTargetDisplay() {
-  const primary = screen.getPrimaryDisplay();
-  const external = screen.getAllDisplays().find((d) => d.id !== primary.id);
-  return external || primary;
-}
-
-// Đưa đảo (khi thu gọn) về màn hình mục tiêu
-function moveToPreferredDisplay() {
+// Đưa đảo (khi thu gọn) về màn hình đang có con chuột.
+// Cách này đáng tin nhất: con chuột luôn ở màn hình thật, hiển thị được —
+// xử lý tốt cả trường hợp rút hẳn dây lẫn tắt nguồn màn hình rời (Windows
+// vẫn liệt kê ghost display trong getAllDisplays).
+function followCursorDisplay() {
   if (!mainWindow || islandExpanded) return;
-  const target = pickTargetDisplay();
-  if (target.id !== lastFollowDisplayId) {
-    lastFollowDisplayId = target.id;
+  const cursor = screen.getCursorScreenPoint();
+  const target = screen.getDisplayNearestPoint(cursor);
+  const bounds = mainWindow.getBounds();
+  const center = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
+  const current = screen.getDisplayNearestPoint(center);
+  if (target.id !== current.id) {
+    console.log('[DISPLAY] follow cursor ->', target.id, '(was', current.id + ')');
     moveWindowToDisplay(target);
   }
 }
@@ -100,10 +99,6 @@ function createWindow() {
   // Renderer báo trạng thái mở/thu gọn để quyết định có theo màn hình không
   ipcMain.on('set-island-expanded', (event, expanded) => {
     islandExpanded = !!expanded;
-    if (!expanded) {
-      const cursor = screen.getCursorScreenPoint();
-      lastFollowDisplayId = screen.getDisplayNearestPoint(cursor).id;
-    }
   });
 
   // Tự động khởi động cùng Windows
@@ -259,22 +254,21 @@ function uninstallerPath() {
 app.whenReady().then(() => {
   createWindow();
 
-  // Cắm màn hình rời → đưa đảo sang đó; rút màn hình → quay về màn hình chính
+  // Cắm/rút màn hình → tự cập nhật vị trí theo màn hình có chuột
   screen.on('display-added', () => {
-    lastFollowDisplayId = null;
-    moveToPreferredDisplay();
+    console.log('[DISPLAY] added');
+    followCursorDisplay();
   });
   screen.on('display-removed', () => {
-    lastFollowDisplayId = null;
-    moveToPreferredDisplay();
+    console.log('[DISPLAY] removed');
+    followCursorDisplay();
   });
   screen.on('display-metrics-changed', () => {
-    lastFollowDisplayId = null;
+    followCursorDisplay();
   });
 
-  // Cập nhật vị trí khi màn hình thay đổi
-  lastFollowDisplayId = screen.getPrimaryDisplay().id;
-  setInterval(moveToPreferredDisplay, 500);
+  // Theo dõi liên tục (500ms) để đảo đi theo màn hình đang dùng
+  setInterval(followCursorDisplay, 500);
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
