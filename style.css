@@ -405,7 +405,7 @@ body {
 .header-apps {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
 }
 
 .dock-app {
