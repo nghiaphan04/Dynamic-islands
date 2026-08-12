@@ -64,6 +64,11 @@ function createWindow() {
     return app.getLoginItemSettings().openAtLogin;
   });
 
+  // Lấy ngôn ngữ hệ thống để bản địa hóa giao diện
+  ipcMain.handle('get-locale', () => {
+    return app.getLocale();
+  });
+
   // Đóng ứng dụng
   ipcMain.on('close-app', () => {
     app.quit();

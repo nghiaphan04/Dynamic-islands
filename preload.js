@@ -102,6 +102,9 @@ contextBridge.exposeInMainWorld('api', {
   setAutostart: (enable) => ipcRenderer.send('set-autostart', enable),
   getAutostart: () => ipcRenderer.invoke('get-autostart'),
 
+  // Ngôn ngữ hệ thống
+  getLocale: () => ipcRenderer.invoke('get-locale'),
+
   // Đóng app
   closeApp: () => ipcRenderer.send('close-app'),
 

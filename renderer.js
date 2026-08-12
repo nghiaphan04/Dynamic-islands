@@ -128,6 +128,63 @@ const btnNext = document.getElementById('btn-next');
 const btnClose = document.getElementById('btn-close');
 const btnTaskmgr = document.getElementById('btn-taskmgr');
 const chkAutostart = document.getElementById('chk-autostart');
+const autostartLabel = document.getElementById('switch-label');
+
+// ==========================================
+// BẢN ĐỊA HÓA THEO NGÔN NGỮ HỆ THỐNG
+// ==========================================
+const I18N = {
+  vi: {
+    playTitle: 'Phát/Tạm dừng',
+    prevTitle: 'Bài trước',
+    nextTitle: 'Bài tiếp theo',
+    taskmgrTitle: 'Mở Task Manager',
+    uninstallTitle: 'Gỡ cài đặt Dynamic Island',
+    autostartLabel: 'Tự khởi động cùng Windows',
+    islandTitle: 'Nhấp chuột để mở rộng',
+    noMusic: 'Không có nhạc',
+    stopped: 'Dừng',
+    noTitle: 'Không có tiêu đề',
+    noArtist: 'Không rõ ca sĩ',
+    uninstallConfirm: 'Gỡ cài đặt Dynamic Island khỏi máy này?'
+  },
+  en: {
+    playTitle: 'Play / Pause',
+    prevTitle: 'Previous',
+    nextTitle: 'Next',
+    taskmgrTitle: 'Open Task Manager',
+    uninstallTitle: 'Uninstall Dynamic Island',
+    autostartLabel: 'Launch at startup',
+    islandTitle: 'Click to expand',
+    noMusic: 'No music',
+    stopped: 'Stopped',
+    noTitle: 'No title',
+    noArtist: 'Unknown artist',
+    uninstallConfirm: 'Uninstall Dynamic Island from this machine?'
+  }
+};
+
+let t = /^vi/i.test(navigator.language || '') ? I18N.vi : I18N.en;
+
+function applyI18n() {
+  btnPlay.title = t.playTitle;
+  btnPrev.title = t.prevTitle;
+  btnNext.title = t.nextTitle;
+  btnTaskmgr.title = t.taskmgrTitle;
+  btnUninstall.title = t.uninstallTitle;
+  autostartLabel.textContent = t.autostartLabel;
+  island.title = t.islandTitle;
+  mediaTitle.textContent = t.noMusic;
+  mediaArtist.textContent = t.stopped;
+  compactMediaTitle.textContent = t.noMusic;
+  compactMediaTitle2.textContent = t.noMusic;
+}
+
+window.api.getLocale().then((locale) => {
+  t = /^vi/i.test(locale || '') ? I18N.vi : I18N.en;
+  applyI18n();
+  updateMedia();
+});
 
 let isExpanded = false;
 let collapseTimeout = null;
@@ -269,8 +326,8 @@ function updateMedia() {
       // Hiển thị phần nhạc thu gọn
       compactNormal.style.display = 'none';
       compactMedia.style.display = 'flex';
-      compactMediaTitle.textContent = media.title || 'Không có tiêu đề';
-      compactMediaTitle2.textContent = media.title || 'Không có tiêu đề';
+      compactMediaTitle.textContent = media.title || t.noTitle;
+      compactMediaTitle2.textContent = media.title || t.noTitle;
       compactMediaStatusBtn.innerHTML = media.status === 'playing' ? COMPACT_PAUSE_SVG : COMPACT_PLAY_SVG;
       
       if (media.status === 'paused') {
@@ -281,8 +338,8 @@ function updateMedia() {
         btnPlay.innerHTML = PAUSE_SVG;
       }
       
-      mediaTitle.textContent = media.title || 'Không có tiêu đề';
-      mediaArtist.textContent = media.artist || 'Không rõ ca sĩ';
+      mediaTitle.textContent = media.title || t.noTitle;
+      mediaArtist.textContent = media.artist || t.noArtist;
       updateMediaProgress(media);
       // Chỉ cập nhật ảnh bìa khi thực sự đổi bài, tránh tốn memory/CPU decode lại
       const img = media.image || null;
@@ -303,8 +360,8 @@ function updateMedia() {
       compactMedia.style.display = 'none';
       
       btnPlay.innerHTML = PLAY_SVG;
-      mediaTitle.textContent = 'Không có nhạc';
-      mediaArtist.textContent = 'Dừng';
+      mediaTitle.textContent = t.noMusic;
+      mediaArtist.textContent = t.stopped;
       lastMediaImage = null;
       mediaArt.removeAttribute('src');
       mediaState = { playing: false, position: 0, duration: 0, lastUpdated: 0, syncAt: Date.now() };
@@ -318,8 +375,8 @@ function updateMedia() {
     compactMedia.style.display = 'none';
     
     btnPlay.innerHTML = PLAY_SVG;
-    mediaTitle.textContent = 'Không có nhạc';
-    mediaArtist.textContent = 'Dừng';
+    mediaTitle.textContent = t.noMusic;
+    mediaArtist.textContent = t.stopped;
     lastMediaImage = null;
     mediaArt.removeAttribute('src');
     mediaState = { playing: false, position: 0, duration: 0, lastUpdated: 0, syncAt: Date.now() };
@@ -362,7 +419,7 @@ window.api.canUninstall().then((ok) => {
 
 btnUninstall.addEventListener('click', (e) => {
   e.stopPropagation();
-  if (confirm('Gỡ cài đặt Dynamic Island khỏi máy này?')) {
+  if (confirm(t.uninstallConfirm)) {
     window.api.uninstallApp();
   }
 });
