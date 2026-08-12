@@ -268,6 +268,7 @@ app.whenReady().then(() => {
     checkExternalMonitor((ext) => {
       if (ext === lastExternalState) return;
       lastExternalState = ext;
+      console.log('[MONITOR] external =', ext);
       if (ext) {
         const primary = screen.getPrimaryDisplay();
         const external = screen.getAllDisplays().find((d) => d.id !== primary.id);
