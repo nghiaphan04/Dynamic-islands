@@ -283,6 +283,13 @@ body {
   gap: 8px;
 }
 
+.header-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
 .action-btn {
   background: rgba(255, 255, 255, 0.08);
   border: none;

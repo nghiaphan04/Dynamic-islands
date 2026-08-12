@@ -439,6 +439,7 @@ window.api.getAutostart().then((enabled) => {
 // DOCK APP - thêm ứng dụng vào Dynamic Island
 // ==========================================
 const appDock = document.getElementById('app-dock');
+const sepApps = document.getElementById('sep-apps');
 let dockApps = [];
 
 async function loadDockApps() {
@@ -452,6 +453,7 @@ async function loadDockApps() {
 
 function renderDock() {
   appDock.innerHTML = '';
+  sepApps.style.display = dockApps.length ? 'block' : 'none';
   dockApps.forEach((app, idx) => {
     const btn = document.createElement('div');
     btn.className = 'dock-app';
