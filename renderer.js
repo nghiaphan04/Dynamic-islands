@@ -313,13 +313,6 @@ async function pollPointer() {
 
 setInterval(pollPointer, 150);
 
-// Chạy animation "pop" khi đảo xuất hiện ở màn hình mới (window vừa di chuyển)
-window.api.onIslandMoved(() => {
-  island.classList.remove('island-enter');
-  void island.offsetWidth;
-  island.classList.add('island-enter');
-});
-
 
 // ==========================================
 // 2. CO GIÃN ĐẢO (EXPAND / COLLAPSE)
