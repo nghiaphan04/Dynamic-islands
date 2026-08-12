@@ -226,6 +226,18 @@ body {
   color: #ff9f0a; /* Màu cam nổi bật nhẹ */
 }
 
+/* Icon mic/camera khi đang được sử dụng */
+.compact-left .privacy-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.compact-left .privacy-active svg {
+  width: 12px;
+  height: 12px;
+}
+
 .compact-right {
   color: #30d158; /* Màu xanh lá hệ thống */
 }

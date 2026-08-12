@@ -145,5 +145,8 @@ contextBridge.exposeInMainWorld('api', {
   // Tua bài hát đến vị trí (ms)
   sendMediaSeek: (ms) => {
     sendMediaCommand('seek ' + Math.round(ms));
-  }
+  },
+
+  // Trạng thái mic/camera đang dùng
+  getPrivacy: () => sendMediaCommand('privacy')
 });

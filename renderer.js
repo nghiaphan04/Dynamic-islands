@@ -148,7 +148,10 @@ const I18N = {
     noArtist: 'Không rõ ca sĩ',
     uninstallConfirm: 'Gỡ cài đặt Dynamic Island khỏi máy này?',
     addAppTitle: 'Thêm ứng dụng',
-    removeAppTitle: 'Xóa khỏi dock'
+    removeAppTitle: 'Xóa khỏi dock',
+    privacyMic: 'Đang sử dụng micro',
+    privacyCam: 'Đang sử dụng camera',
+    privacyBoth: 'Đang sử dụng micro & camera'
   },
   en: {
     playTitle: 'Play / Pause',
@@ -164,7 +167,10 @@ const I18N = {
     noArtist: 'Unknown artist',
     uninstallConfirm: 'Uninstall Dynamic Island from this machine?',
     addAppTitle: 'Add application',
-    removeAppTitle: 'Remove from dock'
+    removeAppTitle: 'Remove from dock',
+    privacyMic: 'Microphone in use',
+    privacyCam: 'Camera in use',
+    privacyBoth: 'Microphone & camera in use'
   }
 };
 
@@ -276,12 +282,61 @@ function updateTime() {
   // Compact mode đã dùng CPU% thay cho giờ
 }
 
+// ==========================================
+// MIC / CAMERA ĐANG DÙNG - hiển thị thay chỗ CPU ở đảo thu gọn
+// ==========================================
+let privacyState = { mic: false, cam: false };
+
+function privacySvg(color, kind) {
+  if (kind === 'mic') {
+    return `<svg viewBox="0 0 24 24" fill="${color}" width="12" height="12"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>`;
+  }
+  return `<svg viewBox="0 0 24 24" fill="${color}" width="12" height="12"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>`;
+}
+
+function privacyIcon() {
+  const { mic, cam } = privacyState;
+  if (mic && cam) {
+    const red = '#ff453a';
+    return { svg: privacySvg(red, 'mic') + privacySvg(red, 'cam') };
+  }
+  if (mic) return { svg: privacySvg('#ff9f0a', 'mic') };
+  if (cam) return { svg: privacySvg('#ffd60a', 'cam') };
+  return null;
+}
+
+function privacyTooltip() {
+  const { mic, cam } = privacyState;
+  if (mic && cam) return t.privacyBoth;
+  return mic ? t.privacyMic : t.privacyCam;
+}
+
+function updatePrivacy() {
+  window.api.getPrivacy().then((p) => {
+    const wasActive = !!privacyIcon();
+    privacyState = { mic: !!p.mic, cam: !!p.cam };
+    const isActive = !!privacyIcon();
+    if (isActive) {
+      compactTime.innerHTML = privacyIcon().svg;
+      compactTime.title = privacyTooltip();
+      compactTime.classList.add('privacy-active');
+    } else if (wasActive) {
+      compactTime.classList.remove('privacy-active');
+      compactTime.innerHTML = '';
+      compactTime.title = '';
+      updateStats();
+    }
+  }).catch(() => {});
+}
+
 // Cập nhật thông số CPU/RAM
 function updateStats() {
   const stats = window.api.getSystemStats();
   
   // View thu gọn - CPU% thay thế giờ, RAM bên phải
-  compactTime.textContent = `CPU ${stats.cpu}%`;
+  if (!privacyIcon()) {
+    compactTime.textContent = `CPU ${stats.cpu}%`;
+  }
   compactRamMedia.textContent = `${stats.ram}%`;
   compactRam.textContent = `RAM ${stats.ram}%`;
 
@@ -394,8 +449,13 @@ function updateMedia() {
 updateTime();
 setInterval(updateTime, 1000);
 
-updateStats();
-setInterval(updateStats, 2000);
+function refreshStats() {
+  updateStats();
+  updatePrivacy();
+}
+
+refreshStats();
+setInterval(refreshStats, 2000);
 
 updateMedia();
 setInterval(updateMedia, 1500);

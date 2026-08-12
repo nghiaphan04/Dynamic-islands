@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Microsoft.Win32;
 using Windows.Foundation;
 using Windows.Media.Control;
 using Windows.Storage.Streams;
@@ -55,6 +56,10 @@ class MediaHelper
                         if (parts.Length > 1 && long.TryParse(parts[1], out seekMs))
                             SendSeek(seekMs);
                         WriteResponse("{\"ok\":true}");
+                        break;
+                    case "privacy":
+                        WriteResponse("{\"mic\":" + (DeviceInUse("microphone") ? "true" : "false") +
+                                      ",\"cam\":" + (DeviceInUse("camera") ? "true" : "false") + "}");
                         break;
                     default:
                         WriteResponse("{\"status\":\"stopped\"}");
@@ -252,6 +257,37 @@ class MediaHelper
             Console.WriteLine(json);
             Console.Out.Flush();
         }
+    }
+
+    // ===== PHÁT HIỆN MIC/CAMERA ĐANG DÙNG (qua ConsentStore registry) =====
+    // App đang dùng thiết bị khi LastUsedTimeStart > 0 và LastUsedTimeStop == 0
+    static bool DeviceInUse(string device)
+    {
+        string baseKey = @"Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\" + device;
+        using (var root = Registry.CurrentUser.OpenSubKey(baseKey))
+        {
+            if (root == null) return false;
+            return SubtreeInUse(root);
+        }
+    }
+
+    static bool SubtreeInUse(RegistryKey key)
+    {
+        foreach (string sub in key.GetSubKeyNames())
+        {
+            using (var k = key.OpenSubKey(sub))
+            {
+                if (k == null) continue;
+                long start = 0, stop = 0;
+                object sv = k.GetValue("LastUsedTimeStart");
+                object ev = k.GetValue("LastUsedTimeStop");
+                if (sv != null) start = Convert.ToInt64(sv);
+                if (ev != null) stop = Convert.ToInt64(ev);
+                if (start > 0 && stop == 0) return true;
+                if (SubtreeInUse(k)) return true;
+            }
+        }
+        return false;
     }
 
     static T AwaitOp<T>(IAsyncOperation<T> op)
