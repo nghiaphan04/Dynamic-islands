@@ -273,6 +273,8 @@ let collapseTimeout = null;
 // 1. QUẢN LÝ TƯƠNG TÁC CHUỘT XUYÊN THẤU (CLICK-THROUGH) VÀ HOVER
 // ==========================================
 // Kiểm tra vị trí chuột liên tục trên màn hình để bật/tắt click xuyên thấu
+// Đồng thời điều khiển hover (scale) và đếm ngược tự thu nhỏ bằng toạ độ,
+// không dựa vào :hover/mouseleave vì cửa sổ không nhận focus có thể làm chúng kẹt.
 document.addEventListener('mousemove', (e) => {
   const rect = island.getBoundingClientRect();
   
@@ -285,15 +287,27 @@ document.addEventListener('mousemove', (e) => {
   );
 
   if (isOverIsland) {
+    island.classList.add('hovered');
     window.api.setIgnoreMouseEvents(false);
+    if (collapseTimeout) {
+      clearTimeout(collapseTimeout);
+      collapseTimeout = null;
+    }
   } else {
+    island.classList.remove('hovered');
     // Cho phép click xuyên qua nếu di chuột ra ngoài hòn đảo thực tế
     window.api.setIgnoreMouseEvents(true, { forward: true });
+    // Tự động thu nhỏ sau 2 giây nếu đang mở rộng
+    if (isExpanded && !collapseTimeout) {
+      collapseTimeout = setTimeout(() => {
+        collapseTimeout = null;
+        collapseIsland();
+      }, 2000);
+    }
   }
 });
 
 island.addEventListener('mouseenter', () => {
-  // Hủy đếm ngược thu nhỏ nếu người dùng hover lại vào đảo
   if (collapseTimeout) {
     clearTimeout(collapseTimeout);
     collapseTimeout = null;
@@ -301,9 +315,9 @@ island.addEventListener('mouseenter', () => {
 });
 
 island.addEventListener('mouseleave', () => {
-  // Tự động thu nhỏ sau 2 giây nếu đang mở rộng
-  if (isExpanded) {
+  if (isExpanded && !collapseTimeout) {
     collapseTimeout = setTimeout(() => {
+      collapseTimeout = null;
       collapseIsland();
     }, 2000);
   }

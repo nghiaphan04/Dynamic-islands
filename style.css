@@ -74,7 +74,7 @@ body {
   padding: 0 12px;
 }
 
-#island.compact:hover {
+#island.compact.hovered {
   background: rgba(0, 0, 0, 1.0);
   transform: scale(1.04);
 }
