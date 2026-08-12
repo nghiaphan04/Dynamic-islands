@@ -148,5 +148,10 @@ contextBridge.exposeInMainWorld('api', {
   },
 
   // Trạng thái mic/camera đang dùng
-  getPrivacy: () => sendMediaCommand('privacy')
+  getPrivacy: () => sendMediaCommand('privacy'),
+
+  // Tùy chỉnh nền & theme
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  saveSettings: (settings) => ipcRenderer.send('save-settings', settings),
+  pickBg: () => ipcRenderer.invoke('pick-bg')
 });

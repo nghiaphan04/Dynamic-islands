@@ -152,6 +152,44 @@ function createWindow() {
       console.error('Save apps error:', err);
     }
   });
+
+  // === TÙY CHỈNH NỀN & THEME ===
+  const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
+
+  ipcMain.handle('get-settings', () => {
+    try {
+      return JSON.parse(fs.readFileSync(settingsFile(), 'utf8'));
+    } catch (err) {
+      return {};
+    }
+  });
+
+  ipcMain.on('save-settings', (event, settings) => {
+    try {
+      fs.writeFileSync(settingsFile(), JSON.stringify(settings));
+    } catch (err) {
+      console.error('Save settings error:', err);
+    }
+  });
+
+  // Chọn ảnh nền → trả về data URL
+  ipcMain.handle('pick-bg', async () => {
+    const isVi = /^vi/i.test(app.getLocale());
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: isVi ? 'Chọn ảnh nền' : 'Choose background image',
+      properties: ['openFile'],
+      filters: [{ name: isVi ? 'Hình ảnh' : 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'] }]
+    });
+    if (res.canceled || !res.filePaths.length) return null;
+    try {
+      const buf = fs.readFileSync(res.filePaths[0]);
+      const ext = path.extname(res.filePaths[0]).toLowerCase().replace('.', '') || 'png';
+      const mime = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', bmp: 'image/bmp', gif: 'image/gif' }[ext] || 'image/png';
+      return `data:${mime};base64,${buf.toString('base64')}`;
+    } catch (err) {
+      return null;
+    }
+  });
 }
 
 function uninstallerPath() {

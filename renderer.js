@@ -129,6 +129,69 @@ const btnClose = document.getElementById('btn-close');
 const btnTaskmgr = document.getElementById('btn-taskmgr');
 const chkAutostart = document.getElementById('chk-autostart');
 const autostartLabel = document.getElementById('switch-label');
+const btnBg = document.getElementById('btn-bg');
+const btnTheme = document.getElementById('btn-theme');
+
+// ==========================================
+// TÙY CHỈNH NỀN & THEME
+// ==========================================
+const THEMES = [
+  { accentCpu: '#ff9f0a', accentRam: '#30d158' },
+  { accentCpu: '#0a84ff', accentRam: '#5e5ce6' },
+  { accentCpu: '#bf5af2', accentRam: '#64d2ff' },
+  { accentCpu: '#ff375f', accentRam: '#ffd60a' },
+  { accentCpu: '#63e6e2', accentRam: '#34c759' },
+  { accentCpu: '#ffffff', accentRam: '#ffffff' }
+];
+
+let settings = { background: null, themeIndex: 0 };
+
+function applyTheme(index) {
+  settings.themeIndex = index;
+  const th = THEMES[index] || THEMES[0];
+  island.style.setProperty('--accent-cpu', th.accentCpu);
+  island.style.setProperty('--accent-ram', th.accentRam);
+}
+
+function applyBackground(bgUrl) {
+  settings.background = bgUrl || null;
+  if (bgUrl) {
+    island.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${bgUrl})`;
+    island.style.backgroundSize = 'cover';
+    island.style.backgroundPosition = 'center';
+    island.style.backgroundColor = 'transparent';
+  } else {
+    island.style.backgroundImage = 'none';
+    island.style.backgroundColor = 'rgba(5, 5, 5, 0.96)';
+  }
+}
+
+function saveSettings() {
+  window.api.saveSettings(settings);
+}
+
+function loadSettings() {
+  window.api.getSettings().then((s) => {
+    settings = Object.assign({ background: null, themeIndex: 0 }, s || {});
+    applyTheme(settings.themeIndex);
+    if (settings.background) applyBackground(settings.background);
+  }).catch(() => {});
+}
+
+btnBg.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  const bg = await window.api.pickBg();
+  if (bg) {
+    applyBackground(bg);
+    saveSettings();
+  }
+});
+
+btnTheme.addEventListener('click', (e) => {
+  e.stopPropagation();
+  applyTheme((settings.themeIndex + 1) % THEMES.length);
+  saveSettings();
+});
 
 // ==========================================
 // BẢN ĐỊA HÓA THEO NGÔN NGỮ HỆ THỐNG
@@ -151,7 +214,9 @@ const I18N = {
     removeAppTitle: 'Xóa khỏi dock',
     privacyMic: 'Đang sử dụng micro',
     privacyCam: 'Đang sử dụng camera',
-    privacyBoth: 'Đang sử dụng micro & camera'
+    privacyBoth: 'Đang sử dụng micro & camera',
+    bgTitle: 'Chọn ảnh nền',
+    themeTitle: 'Đổi theme màu'
   },
   en: {
     playTitle: 'Play / Pause',
@@ -170,7 +235,9 @@ const I18N = {
     removeAppTitle: 'Remove from dock',
     privacyMic: 'Microphone in use',
     privacyCam: 'Camera in use',
-    privacyBoth: 'Microphone & camera in use'
+    privacyBoth: 'Microphone & camera in use',
+    bgTitle: 'Choose background image',
+    themeTitle: 'Change theme color'
   }
 };
 
@@ -183,6 +250,8 @@ function applyI18n() {
   btnTaskmgr.title = t.taskmgrTitle;
   btnUninstall.title = t.uninstallTitle;
   btnAddApp.title = t.addAppTitle;
+  btnBg.title = t.bgTitle;
+  btnTheme.title = t.themeTitle;
   autostartLabel.textContent = t.autostartLabel;
   island.title = t.islandTitle;
   mediaTitle.textContent = t.noMusic;
@@ -195,6 +264,7 @@ window.api.getLocale().then((locale) => {
   t = /^vi/i.test(locale || '') ? I18N.vi : I18N.en;
   applyI18n();
   loadDockApps();
+  loadSettings();
   updateMedia();
 });
 
