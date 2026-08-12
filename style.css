@@ -410,22 +410,22 @@ body {
 
 .dock-app {
   position: relative;
-  width: 26px;
-  height: 26px;
-  min-width: 26px;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #ffffff;
   flex-shrink: 0;
 }
 
 .dock-app img {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   pointer-events: none;
 }
 
