@@ -440,7 +440,14 @@ window.api.getAutostart().then((enabled) => {
 // ==========================================
 const appDock = document.getElementById('app-dock');
 const sepApps = document.getElementById('sep-apps');
+const MAX_DOCK_APPS = 10;
 let dockApps = [];
+
+function updateAddButtonState() {
+  const full = dockApps.length >= MAX_DOCK_APPS;
+  btnAddApp.disabled = full;
+  btnAddApp.classList.toggle('disabled', full);
+}
 
 async function loadDockApps() {
   try {
@@ -454,6 +461,7 @@ async function loadDockApps() {
 function renderDock() {
   appDock.innerHTML = '';
   sepApps.style.display = dockApps.length ? 'block' : 'none';
+  updateAddButtonState();
   dockApps.forEach((app, idx) => {
     const btn = document.createElement('div');
     btn.className = 'dock-app';
@@ -488,6 +496,7 @@ function renderDock() {
 const btnAddApp = document.getElementById('btn-add-app');
 btnAddApp.addEventListener('click', async (e) => {
   e.stopPropagation();
+  if (dockApps.length >= MAX_DOCK_APPS) return;
   const app = await window.api.pickApp();
   if (app) {
     dockApps.unshift(app);
