@@ -299,18 +299,19 @@ function deviceIcon(ev) {
 }
 
 function flashCompactDevice(svg, name) {
-  // Đang phát nhạc thì compact hiện marquee, không thay CPU
-  if (island.classList.contains('has-media')) return;
+  // Đang phát nhạc: compact hiện marquee nên flash ở ô RAM bên phải thay vì CPU
+  const mediaMode = island.classList.contains('has-media');
+  const target = mediaMode ? compactRamMedia : compactTime;
   flashActive = true;
-  compactTime.innerHTML = svg;
-  compactTime.title = name || '';
-  compactTime.classList.add('device-flash');
+  target.innerHTML = svg;
+  target.title = name || '';
+  target.classList.add('device-flash');
   if (flashTimer) clearTimeout(flashTimer);
   flashTimer = setTimeout(() => {
     flashActive = false;
-    compactTime.innerHTML = '';
-    compactTime.title = '';
-    compactTime.classList.remove('device-flash');
+    target.innerHTML = '';
+    target.title = '';
+    target.classList.remove('device-flash');
     updateStats();
   }, 3000);
 }
@@ -329,9 +330,9 @@ function updateStats() {
   // View thu gọn - CPU% thay thế giờ, RAM bên phải
   if (!flashActive) {
     compactTime.textContent = `CPU ${stats.cpu}%`;
+    compactRamMedia.textContent = `${stats.ram}%`;
   }
   compactRam.textContent = `RAM ${stats.ram}%`;
-  compactRamMedia.textContent = `${stats.ram}%`;
 
   // Đổi màu RAM ở chế độ thu gọn đang phát nhạc (xám → cam ≥60% → đỏ ≥85%)
   compactRamMedia.classList.remove('warning', 'danger');
