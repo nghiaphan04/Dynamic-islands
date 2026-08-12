@@ -7,7 +7,7 @@ const { pathToFileURL } = require('url');
 app.disableHardwareAcceleration();
 
 // Giảm bộ nhớ renderer: giới hạn heap V8 (app rất nhẹ), tắt các tiến trình/tính năng không cần
-app.commandLine.appendSwitch('js-flags', '--max-old-space-size=96 --max-semi-space-size=4');
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=64 --max-semi-space-size=4');
 app.commandLine.appendSwitch('disable-features', 'BackgroundTracing,SpareRendererForSitePerProcess,CalculateNativeWinOcclusion');
 
 let mainWindow;
