@@ -23,24 +23,20 @@ function moveWindowToDisplay(display) {
   mainWindow.setPosition(Math.round(x + (width - WINDOW_WIDTH) / 2), y + 10);
 }
 
-// Theo màn hình đang dùng (theo vị trí chuột) khi đảo đang thu gọn
-function followCursorDisplay() {
+// Chọn màn hình hiển thị: ưu tiên màn hình rời, nếu không có thì màn hình chính
+function pickTargetDisplay() {
+  const primary = screen.getPrimaryDisplay();
+  const external = screen.getAllDisplays().find((d) => d.id !== primary.id);
+  return external || primary;
+}
+
+// Đưa đảo (khi thu gọn) về màn hình mục tiêu
+function moveToPreferredDisplay() {
   if (!mainWindow || islandExpanded) return;
-  const cursor = screen.getCursorScreenPoint();
-  const display = screen.getDisplayNearestPoint(cursor);
-
-  // Kiểm tra window có đang nằm trong một màn hình hợp lệ không
-  const bounds = mainWindow.getBounds();
-  const onScreen = screen.getAllDisplays().some((d) => {
-    const a = d.workArea;
-    return bounds.x + bounds.width > a.x && bounds.x < a.x + a.width &&
-           bounds.y + bounds.height > a.y && bounds.y < a.y + a.height;
-  });
-
-  // Kéo về nếu window bị rơi ra ngoài (màn hình cũ đã rút) hoặc chuột đổi màn hình
-  if (!onScreen || display.id !== lastFollowDisplayId) {
-    lastFollowDisplayId = display.id;
-    moveWindowToDisplay(display);
+  const target = pickTargetDisplay();
+  if (target.id !== lastFollowDisplayId) {
+    lastFollowDisplayId = target.id;
+    moveWindowToDisplay(target);
   }
 }
 
@@ -260,22 +256,22 @@ function uninstallerPath() {
 app.whenReady().then(() => {
   createWindow();
 
-  // Cắm thêm màn hình → đưa đảo sang màn hình mới; rút màn hình → quay về màn hình chính
-  screen.on('display-added', (event, display) => {
-    lastFollowDisplayId = display.id;
-    moveWindowToDisplay(display);
-  });
-  screen.on('display-removed', (event, display) => {
-    // Reset để vòng theo dõi tự kéo window về màn hình có chuột
+  // Cắm màn hình rời → đưa đảo sang đó; rút màn hình → quay về màn hình chính
+  screen.on('display-added', () => {
     lastFollowDisplayId = null;
+    moveToPreferredDisplay();
+  });
+  screen.on('display-removed', () => {
+    lastFollowDisplayId = null;
+    moveToPreferredDisplay();
   });
   screen.on('display-metrics-changed', () => {
     lastFollowDisplayId = null;
   });
 
-  // Theo dõi màn hình đang dùng theo vị trí chuột
+  // Cập nhật vị trí khi màn hình thay đổi
   lastFollowDisplayId = screen.getPrimaryDisplay().id;
-  setInterval(followCursorDisplay, 500);
+  setInterval(moveToPreferredDisplay, 500);
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
