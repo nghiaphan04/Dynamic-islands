@@ -454,16 +454,16 @@ body {
 
 /* Nút "Thêm ứng dụng" - ô vuông viền nét đứt nhỏ gọn */
 #btn-add-app {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border: 1px dashed rgba(255, 255, 255, 0.4);
-  border-radius: 3px;
+  border-radius: 4px;
   color: rgba(255, 255, 255, 0.7);
 }
 
 #btn-add-app svg {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
 }
 
 #btn-add-app:hover {
