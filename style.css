@@ -274,6 +274,23 @@ body {
   gap: 8px;
 }
 
+/* Nút chọn ảnh nền: không nền, không viền tròn, icon to hơn */
+#btn-bg {
+  background: transparent;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+}
+
+#btn-bg svg {
+  width: 14px;
+  height: 14px;
+}
+
+#btn-bg:hover {
+  background: transparent;
+}
+
 .header-title {
   font-size: 10px;
   font-weight: 600;
