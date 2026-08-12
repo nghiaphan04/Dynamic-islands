@@ -490,7 +490,7 @@ btnAddApp.addEventListener('click', async (e) => {
   e.stopPropagation();
   const app = await window.api.pickApp();
   if (app) {
-    dockApps.push(app);
+    dockApps.unshift(app);
     saveDockApps();
   }
 });
