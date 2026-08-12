@@ -440,7 +440,7 @@ window.api.getAutostart().then((enabled) => {
 // ==========================================
 const appDock = document.getElementById('app-dock');
 const sepApps = document.getElementById('sep-apps');
-const MAX_DOCK_APPS = 10;
+const MAX_DOCK_APPS = 14;
 let dockApps = [];
 
 function updateAddButtonState() {
@@ -499,8 +499,12 @@ btnAddApp.addEventListener('click', async (e) => {
   if (dockApps.length >= MAX_DOCK_APPS) return;
   const app = await window.api.pickApp();
   if (app) {
-    dockApps.unshift(app);
-    saveDockApps();
+    // Không thêm trùng (so sánh path không phân biệt hoa thường)
+    const exists = dockApps.some((a) => a.path.toLowerCase() === app.path.toLowerCase());
+    if (!exists) {
+      dockApps.unshift(app);
+      saveDockApps();
+    }
   }
 });
 
