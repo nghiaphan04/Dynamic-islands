@@ -385,9 +385,9 @@ body {
 }
 
 .stat-label {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--accent-cpu);
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
