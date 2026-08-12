@@ -83,6 +83,12 @@ function createWindow() {
     app.quit();
   });
 
+  // Khởi động lại app (giải phóng process decode video cũ khi đổi video → ảnh)
+  ipcMain.on('restart-app', () => {
+    app.relaunch();
+    app.exit(0);
+  });
+
   // Mở Task Manager (tách riêng process, không block)
   ipcMain.on('open-task-manager', () => {
     const { spawn } = require('child_process');

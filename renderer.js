@@ -181,10 +181,16 @@ function loadSettings() {
 
 btnBg.addEventListener('click', async (e) => {
   e.stopPropagation();
+  const oldIsVideo = settings.background && typeof settings.background === 'object' && settings.background.type === 'video';
   const bg = await window.api.pickBg();
   if (bg) {
+    const newIsVideo = bg.type === 'video';
     applyBackground(bg);
     saveSettings();
+    // Đổi từ video → ảnh: tự restart để giải phóng process decode video cũ
+    if (oldIsVideo && !newIsVideo) {
+      setTimeout(() => window.api.restartApp(), 500);
+    }
   }
 });
 

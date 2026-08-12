@@ -114,6 +114,9 @@ contextBridge.exposeInMainWorld('api', {
   // Đóng app
   closeApp: () => ipcRenderer.send('close-app'),
 
+  // Khởi động lại app
+  restartApp: () => ipcRenderer.send('restart-app'),
+
   // Mở Task Manager
   openTaskManager: () => ipcRenderer.send('open-task-manager'),
 
