@@ -287,21 +287,11 @@ function updateTime() {
 // ==========================================
 let privacyState = { mic: false, cam: false };
 
-function privacySvg(color, kind) {
-  if (kind === 'mic') {
-    return `<svg viewBox="0 0 24 24" fill="${color}" width="12" height="12"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>`;
-  }
-  return `<svg viewBox="0 0 24 24" fill="${color}" width="12" height="12"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>`;
-}
-
-function privacyIcon() {
+function privacyColor() {
   const { mic, cam } = privacyState;
-  if (mic && cam) {
-    const red = '#ff453a';
-    return { svg: privacySvg(red, 'mic') + privacySvg(red, 'cam') };
-  }
-  if (mic) return { svg: privacySvg('#ff9f0a', 'mic') };
-  if (cam) return { svg: privacySvg('#ffd60a', 'cam') };
+  if (mic && cam) return '#ff453a';
+  if (mic) return '#ff9f0a';
+  if (cam) return '#ffd60a';
   return null;
 }
 
@@ -313,11 +303,12 @@ function privacyTooltip() {
 
 function updatePrivacy() {
   window.api.getPrivacy().then((p) => {
-    const wasActive = !!privacyIcon();
+    const wasActive = !!privacyColor();
     privacyState = { mic: !!p.mic, cam: !!p.cam };
-    const isActive = !!privacyIcon();
+    const color = privacyColor();
+    const isActive = !!color;
     if (isActive) {
-      compactTime.innerHTML = privacyIcon().svg;
+      compactTime.innerHTML = `<span class="privacy-dot" style="background:${color};box-shadow:0 0 6px ${color}"></span>`;
       compactTime.title = privacyTooltip();
       compactTime.classList.add('privacy-active');
     } else if (wasActive) {
@@ -334,7 +325,7 @@ function updateStats() {
   const stats = window.api.getSystemStats();
   
   // View thu gọn - CPU% thay thế giờ, RAM bên phải
-  if (!privacyIcon()) {
+  if (!privacyColor()) {
     compactTime.textContent = `CPU ${stats.cpu}%`;
   }
   compactRamMedia.textContent = `${stats.ram}%`;
