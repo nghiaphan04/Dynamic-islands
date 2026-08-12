@@ -146,7 +146,9 @@ const I18N = {
     stopped: 'Dừng',
     noTitle: 'Không có tiêu đề',
     noArtist: 'Không rõ ca sĩ',
-    uninstallConfirm: 'Gỡ cài đặt Dynamic Island khỏi máy này?'
+    uninstallConfirm: 'Gỡ cài đặt Dynamic Island khỏi máy này?',
+    addAppTitle: 'Thêm ứng dụng',
+    removeAppTitle: 'Xóa khỏi dock'
   },
   en: {
     playTitle: 'Play / Pause',
@@ -160,7 +162,9 @@ const I18N = {
     stopped: 'Stopped',
     noTitle: 'No title',
     noArtist: 'Unknown artist',
-    uninstallConfirm: 'Uninstall Dynamic Island from this machine?'
+    uninstallConfirm: 'Uninstall Dynamic Island from this machine?',
+    addAppTitle: 'Add application',
+    removeAppTitle: 'Remove from dock'
   }
 };
 
@@ -183,6 +187,7 @@ function applyI18n() {
 window.api.getLocale().then((locale) => {
   t = /^vi/i.test(locale || '') ? I18N.vi : I18N.en;
   applyI18n();
+  loadDockApps();
   updateMedia();
 });
 
@@ -252,7 +257,7 @@ function collapseIsland() {
 // Bấm vào đảo để mở rộng
 island.addEventListener('click', (e) => {
   // Tránh việc click vào các nút bấm bên trong cũng kích hoạt toggle
-  if (e.target.closest('.header-actions') || e.target.closest('.header-left') || e.target.closest('.expanded-footer')) {
+  if (e.target.closest('.header-actions') || e.target.closest('.header-left') || e.target.closest('.expanded-footer') || e.target.closest('.app-dock')) {
     return;
   }
   
@@ -428,6 +433,72 @@ btnUninstall.addEventListener('click', (e) => {
 window.api.getAutostart().then((enabled) => {
   chkAutostart.checked = enabled;
 });
+
+// ==========================================
+// DOCK APP - thêm ứng dụng vào Dynamic Island
+// ==========================================
+const appDock = document.getElementById('app-dock');
+let dockApps = [];
+
+async function loadDockApps() {
+  try {
+    dockApps = (await window.api.getApps()) || [];
+  } catch (err) {
+    dockApps = [];
+  }
+  renderDock();
+}
+
+function renderDock() {
+  appDock.innerHTML = '';
+  dockApps.forEach((app, idx) => {
+    const btn = document.createElement('div');
+    btn.className = 'dock-app';
+    btn.title = app.name;
+    if (app.icon) {
+      const img = document.createElement('img');
+      img.src = app.icon;
+      img.draggable = false;
+      btn.appendChild(img);
+    } else {
+      btn.textContent = (app.name || '?').charAt(0).toUpperCase();
+    }
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.api.launchApp(app.path);
+    });
+    const rm = document.createElement('span');
+    rm.className = 'dock-app-remove';
+    rm.textContent = '✕';
+    rm.title = t.removeAppTitle;
+    rm.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dockApps.splice(idx, 1);
+      saveDockApps();
+    });
+    btn.appendChild(rm);
+    appDock.appendChild(btn);
+  });
+
+  const addBtn = document.createElement('div');
+  addBtn.className = 'dock-add';
+  addBtn.title = t.addAppTitle;
+  addBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
+  addBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const app = await window.api.pickApp();
+    if (app) {
+      dockApps.push(app);
+      saveDockApps();
+    }
+  });
+  appDock.appendChild(addBtn);
+}
+
+function saveDockApps() {
+  window.api.saveApps(dockApps);
+  renderDock();
+}
 
 // Xử lý bật tắt tự khởi động
 chkAutostart.addEventListener('change', () => {

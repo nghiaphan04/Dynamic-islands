@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -93,6 +93,55 @@ function createWindow() {
     if (fs.existsSync(uninstaller)) {
       spawn(uninstaller, [], { detached: true, stdio: 'ignore' }).unref();
       app.quit();
+    }
+  });
+
+  // === DOCK APP (thêm ứng dụng vào Dynamic Island) ===
+  const appsFile = () => path.join(app.getPath('userData'), 'dock-apps.json');
+
+  // Mở hộp thoại chọn file .exe, lấy icon ứng dụng
+  ipcMain.handle('pick-app', async () => {
+    const isVi = /^vi/i.test(app.getLocale());
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: isVi ? 'Chọn ứng dụng' : 'Select an application',
+      properties: ['openFile'],
+      filters: [{ name: isVi ? 'Ứng dụng' : 'Applications', extensions: ['exe'] }]
+    });
+    if (res.canceled || !res.filePaths.length) return null;
+    const exePath = res.filePaths[0];
+    let icon = null;
+    try {
+      icon = (await app.getFileIcon(exePath)).toDataURL();
+    } catch (err) { /* bỏ qua nếu không lấy được icon */ }
+    return { path: exePath, name: path.basename(exePath, '.exe'), icon };
+  });
+
+  // Chạy ứng dụng từ dock
+  ipcMain.handle('launch-app', (event, exePath) => {
+    const { spawn } = require('child_process');
+    try {
+      spawn(exePath, [], { detached: true, stdio: 'ignore' }).unref();
+      return true;
+    } catch (err) {
+      return false;
+    }
+  });
+
+  // Đọc danh sách app đã lưu
+  ipcMain.handle('get-apps', () => {
+    try {
+      return JSON.parse(fs.readFileSync(appsFile(), 'utf8'));
+    } catch (err) {
+      return [];
+    }
+  });
+
+  // Lưu danh sách app
+  ipcMain.on('save-apps', (event, apps) => {
+    try {
+      fs.writeFileSync(appsFile(), JSON.stringify(apps));
+    } catch (err) {
+      console.error('Save apps error:', err);
     }
   });
 }

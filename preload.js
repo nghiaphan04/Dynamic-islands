@@ -105,6 +105,12 @@ contextBridge.exposeInMainWorld('api', {
   // Ngôn ngữ hệ thống
   getLocale: () => ipcRenderer.invoke('get-locale'),
 
+  // Dock app
+  pickApp: () => ipcRenderer.invoke('pick-app'),
+  launchApp: (exePath) => ipcRenderer.invoke('launch-app', exePath),
+  getApps: () => ipcRenderer.invoke('get-apps'),
+  saveApps: (apps) => ipcRenderer.send('save-apps', apps),
+
   // Đóng app
   closeApp: () => ipcRenderer.send('close-app'),
 

@@ -401,6 +401,96 @@ body {
   align-items: center;
 }
 
+/* DOCK APP - danh sách ứng dụng */
+.app-dock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-x: auto;
+  min-height: 26px;
+}
+
+.app-dock::-webkit-scrollbar {
+  height: 3px;
+}
+
+.app-dock::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.dock-app {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.dock-app:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.12);
+}
+
+.dock-app img {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.dock-app-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff453a;
+  color: #ffffff;
+  font-size: 7px;
+  line-height: 12px;
+  text-align: center;
+  display: none;
+  z-index: 3;
+}
+
+.dock-app:hover .dock-app-remove {
+  display: block;
+}
+
+.dock-add {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.dock-add:hover {
+  border-color: #ffffff;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
 .switch-container {
   display: flex;
   align-items: center;
