@@ -176,6 +176,7 @@ function applyI18n() {
   btnNext.title = t.nextTitle;
   btnTaskmgr.title = t.taskmgrTitle;
   btnUninstall.title = t.uninstallTitle;
+  btnAddApp.title = t.addAppTitle;
   autostartLabel.textContent = t.autostartLabel;
   island.title = t.islandTitle;
   mediaTitle.textContent = t.noMusic;
@@ -479,21 +480,18 @@ function renderDock() {
     btn.appendChild(rm);
     appDock.appendChild(btn);
   });
-
-  const addBtn = document.createElement('div');
-  addBtn.className = 'dock-add';
-  addBtn.title = t.addAppTitle;
-  addBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
-  addBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    const app = await window.api.pickApp();
-    if (app) {
-      dockApps.push(app);
-      saveDockApps();
-    }
-  });
-  appDock.appendChild(addBtn);
 }
+
+// Nút "Thêm ứng dụng" ở header (cạnh nút thùng rác)
+const btnAddApp = document.getElementById('btn-add-app');
+btnAddApp.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  const app = await window.api.pickApp();
+  if (app) {
+    dockApps.push(app);
+    saveDockApps();
+  }
+});
 
 function saveDockApps() {
   window.api.saveApps(dockApps);
