@@ -11,14 +11,36 @@ app.commandLine.appendSwitch('js-flags', '--max-old-space-size=64 --max-semi-spa
 app.commandLine.appendSwitch('disable-features', 'BackgroundTracing,SpareRendererForSitePerProcess,CalculateNativeWinOcclusion');
 
 let mainWindow;
+let islandExpanded = false;
+let lastFollowDisplayId = null;
+
+const WINDOW_WIDTH = 480;
+const WINDOW_HEIGHT = 250;
+
+function moveWindowToDisplay(display) {
+  if (!mainWindow || !display) return;
+  const { x, y, width } = display.workArea;
+  mainWindow.setPosition(Math.round(x + (width - WINDOW_WIDTH) / 2), y + 10);
+}
+
+// Theo màn hình đang dùng (theo vị trí chuột) khi đảo đang thu gọn
+function followCursorDisplay() {
+  if (!mainWindow || islandExpanded) return;
+  const cursor = screen.getCursorScreenPoint();
+  const display = screen.getDisplayNearestPoint(cursor);
+  if (display.id !== lastFollowDisplayId) {
+    lastFollowDisplayId = display.id;
+    moveWindowToDisplay(display);
+  }
+}
 
 function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width } = primaryDisplay.workAreaSize;
   
   // Kích thước cố định tối đa cho cả lúc mở rộng, tránh việc thay đổi kích thước gây nháy hình
-  const windowWidth = 480;
-  const windowHeight = 250;
+  const windowWidth = WINDOW_WIDTH;
+  const windowHeight = WINDOW_HEIGHT;
 
   mainWindow = new BrowserWindow({
     width: windowWidth,
@@ -64,6 +86,15 @@ function createWindow() {
   // Lấy vị trí chuột toàn màn hình (đơn vị DIP, khớp CSS pixel)
   ipcMain.handle('get-cursor-pos', () => {
     return screen.getCursorScreenPoint();
+  });
+
+  // Renderer báo trạng thái mở/thu gọn để quyết định có theo màn hình không
+  ipcMain.on('set-island-expanded', (event, expanded) => {
+    islandExpanded = !!expanded;
+    if (!expanded) {
+      const cursor = screen.getCursorScreenPoint();
+      lastFollowDisplayId = screen.getDisplayNearestPoint(cursor).id;
+    }
   });
 
   // Tự động khởi động cùng Windows
@@ -218,6 +249,20 @@ function uninstallerPath() {
 
 app.whenReady().then(() => {
   createWindow();
+
+  // Cắm thêm màn hình → đưa đảo sang màn hình mới; rút màn hình → quay về màn hình chính
+  screen.on('display-added', (event, display) => {
+    lastFollowDisplayId = display.id;
+    moveWindowToDisplay(display);
+  });
+  screen.on('display-removed', (event, display) => {
+    lastFollowDisplayId = screen.getPrimaryDisplay().id;
+    moveWindowToDisplay(screen.getPrimaryDisplay());
+  });
+
+  // Theo dõi màn hình đang dùng theo vị trí chuột
+  lastFollowDisplayId = screen.getPrimaryDisplay().id;
+  setInterval(followCursorDisplay, 500);
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

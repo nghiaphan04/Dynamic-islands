@@ -98,6 +98,7 @@ contextBridge.exposeInMainWorld('api', {
   // Quản lý tương tác chuột
   setIgnoreMouseEvents: (ignore, options) => ipcRenderer.send('set-ignore-mouse-events', ignore, options),
   getCursorPos: () => ipcRenderer.invoke('get-cursor-pos'),
+  setIslandExpanded: (expanded) => ipcRenderer.send('set-island-expanded', expanded),
 
   // Cấu hình khởi động cùng win
   setAutostart: (enable) => ipcRenderer.send('set-autostart', enable),

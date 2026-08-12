@@ -323,6 +323,7 @@ function expandIsland() {
   // Chỉ chuyển đổi class CSS, không thay đổi kích thước cửa sổ Electron thực tế
   island.classList.remove('compact');
   island.classList.add('expanded');
+  window.api.setIslandExpanded(true);
 }
 
 function collapseIsland() {
@@ -331,6 +332,7 @@ function collapseIsland() {
   // Chỉ chuyển đổi class CSS, không thay đổi kích thước cửa sổ Electron thực tế
   island.classList.remove('expanded');
   island.classList.add('compact');
+  window.api.setIslandExpanded(false);
 }
 
 // Bấm vào đảo để mở rộng
