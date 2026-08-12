@@ -13,6 +13,8 @@ app.commandLine.appendSwitch('disable-features', 'BackgroundTracing,SpareRendere
 let mainWindow;
 let islandExpanded = false;
 let moving = false;
+// Khóa tạm sau khi rút màn hình để bỏ qua phantom "display-added"
+let ignoreAddsUntil = 0;
 
 const WINDOW_WIDTH = 480;
 const WINDOW_HEIGHT = 250;
@@ -45,6 +47,7 @@ function moveWindowToDisplay(display) {
 // vẫn liệt kê ghost display trong getAllDisplays).
 function followCursorDisplay() {
   if (!mainWindow || islandExpanded || moving) return;
+  if (Date.now() < ignoreAddsUntil) return;
   const cursor = screen.getCursorScreenPoint();
   const target = screen.getDisplayNearestPoint(cursor);
   const bounds = mainWindow.getBounds();
@@ -276,11 +279,18 @@ app.whenReady().then(() => {
   // Cắm/rút màn hình → tự cập nhật vị trí theo màn hình có chuột
   screen.on('display-added', () => {
     console.log('[DISPLAY] added');
+    // Bỏ qua phantom added ngay sau khi rút (Windows re-detect thoáng)
+    if (Date.now() < ignoreAddsUntil) {
+      console.log('[DISPLAY] added ignored (cooldown)');
+      return;
+    }
     followCursorDisplay();
   });
   screen.on('display-removed', () => {
     console.log('[DISPLAY] removed');
-    followCursorDisplay();
+    // Khóa phantom 5s + kéo ngay về màn hình chính
+    ignoreAddsUntil = Date.now() + 5000;
+    moveWindowToDisplay(screen.getPrimaryDisplay());
   });
   screen.on('display-metrics-changed', () => {
     followCursorDisplay();
