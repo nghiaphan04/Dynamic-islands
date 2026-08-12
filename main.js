@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, screen, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { pathToFileURL } = require('url');
 
 // Tắt tăng tốc GPU để bỏ process GPU, giảm đáng kể bộ nhớ (đảo nhỏ, ít animation nên OK)
 app.disableHardwareAcceleration();
@@ -172,20 +173,28 @@ function createWindow() {
     }
   });
 
-  // Chọn ảnh nền → trả về data URL
+  // Chọn ảnh/video nền
   ipcMain.handle('pick-bg', async () => {
     const isVi = /^vi/i.test(app.getLocale());
     const res = await dialog.showOpenDialog(mainWindow, {
-      title: isVi ? 'Chọn ảnh nền' : 'Choose background image',
+      title: isVi ? 'Chọn ảnh/video nền' : 'Choose background image/video',
       properties: ['openFile'],
-      filters: [{ name: isVi ? 'Hình ảnh' : 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'] }]
+      filters: [{
+        name: isVi ? 'Hình ảnh & video' : 'Images & videos',
+        extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif', 'mp4', 'webm', 'mov', 'm4v', 'mkv']
+      }]
     });
     if (res.canceled || !res.filePaths.length) return null;
+    const file = res.filePaths[0];
+    const ext = path.extname(file).toLowerCase().replace('.', '') || 'png';
+    const VIDEO_EXTS = ['mp4', 'webm', 'mov', 'm4v', 'mkv'];
+    if (VIDEO_EXTS.includes(ext)) {
+      return { type: 'video', src: pathToFileURL(file).href };
+    }
     try {
-      const buf = fs.readFileSync(res.filePaths[0]);
-      const ext = path.extname(res.filePaths[0]).toLowerCase().replace('.', '') || 'png';
+      const buf = fs.readFileSync(file);
       const mime = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', bmp: 'image/bmp', gif: 'image/gif' }[ext] || 'image/png';
-      return `data:${mime};base64,${buf.toString('base64')}`;
+      return { type: 'image', src: `data:${mime};base64,${buf.toString('base64')}` };
     } catch (err) {
       return null;
     }

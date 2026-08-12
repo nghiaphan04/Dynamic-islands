@@ -130,23 +130,41 @@ const btnTaskmgr = document.getElementById('btn-taskmgr');
 const chkAutostart = document.getElementById('chk-autostart');
 const autostartLabel = document.getElementById('switch-label');
 const btnBg = document.getElementById('btn-bg');
+const bgVideo = document.getElementById('bg-video');
 
 // ==========================================
-// TÙY CHỈNH ẢNH NỀN
+// TÙY CHỈNH ẢNH / VIDEO NỀN
 // ==========================================
 let settings = { background: null };
 
-function applyBackground(bgUrl) {
-  settings.background = bgUrl || null;
-  if (bgUrl) {
-    island.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${bgUrl})`;
-    island.style.backgroundSize = 'cover';
-    island.style.backgroundPosition = 'center';
-    island.style.backgroundColor = 'transparent';
-  } else {
+function applyBackground(bg) {
+  // bg: null | string (ảnh data URL cũ) | { type:'image'|'video', src }
+  settings.background = bg || null;
+  bgVideo.pause();
+  bgVideo.removeAttribute('src');
+  bgVideo.classList.remove('visible');
+
+  if (!bg) {
     island.style.backgroundImage = 'none';
     island.style.backgroundColor = 'rgba(5, 5, 5, 0.96)';
+    return;
   }
+
+  const isVideo = typeof bg === 'object' && bg.type === 'video';
+  if (isVideo) {
+    island.style.backgroundImage = 'none';
+    island.style.backgroundColor = 'transparent';
+    bgVideo.src = bg.src;
+    bgVideo.classList.add('visible');
+    bgVideo.play().catch(() => {});
+    return;
+  }
+
+  const src = typeof bg === 'string' ? bg : bg.src;
+  island.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${src})`;
+  island.style.backgroundSize = 'cover';
+  island.style.backgroundPosition = 'center';
+  island.style.backgroundColor = 'transparent';
 }
 
 function saveSettings() {
