@@ -21,6 +21,9 @@ function moveWindowToDisplay(display) {
   if (!mainWindow || !display) return;
   const { x, y, width } = display.workArea;
   mainWindow.setPosition(Math.round(x + (width - WINDOW_WIDTH) / 2), y + 10);
+  // Re-assert kích thước DIP: khi đổi màn hình khác DPI, Windows tự resize window
+  // khiến đảo bị lệch/clip → set lại đúng 480×250
+  mainWindow.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 // Chọn màn hình hiển thị: ưu tiên màn hình rời, nếu không có thì màn hình chính
