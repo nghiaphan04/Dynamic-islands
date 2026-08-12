@@ -424,8 +424,8 @@ body {
 }
 
 .dock-app img {
-  width: 20px;
-  height: 20px;
+  width: 11px;
+  height: 11px;
   pointer-events: none;
 }
 
