@@ -416,13 +416,18 @@ body {
   gap: 1px;
 }
 
-/* Nút "Thêm ứng dụng" - ô vuông viền nét đứt, đồng bộ với các nút khác */
+/* Nút "Thêm ứng dụng" - ô vuông viền nét đứt nhỏ gọn */
 #btn-add-app {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border: 1px dashed rgba(255, 255, 255, 0.4);
-  border-radius: 4px;
+  border-radius: 3px;
   color: rgba(255, 255, 255, 0.7);
+}
+
+#btn-add-app svg {
+  width: 10px;
+  height: 10px;
 }
 
 #btn-add-app:hover {
