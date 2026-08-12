@@ -66,6 +66,22 @@ body {
   z-index: 1;
 }
 
+/* Hiệu ứng xuất hiện khi đảo sang màn hình mới */
+.island-enter {
+  animation: islandEnter 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes islandEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Trạng thái thu gọn (Compact) */
 #island.compact {
   width: 170px;

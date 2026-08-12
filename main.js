@@ -23,6 +23,8 @@ function moveWindowToDisplay(display) {
   // Re-assert kích thước DIP: khi đổi màn hình khác DPI, Windows tự resize window
   // khiến đảo bị lệch/clip → set lại đúng 480×250
   mainWindow.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+  // Báo renderer chạy animation xuất hiện
+  mainWindow.webContents.send('island-moved');
 }
 
 // Đưa đảo (khi thu gọn) về màn hình đang có con chuột.
