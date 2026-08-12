@@ -2,7 +2,7 @@
 
 A **Dynamic Island** widget for Windows that mimics the iPhone's Dynamic Island UI, built with **Electron**.
 
-The island always floats at the top-center of your screen. It auto-collapses/expands on hover or click and shows live CPU, RAM, and the currently playing media across your system.
+The island always floats at the top-center of your screen. It auto-collapses/expands on hover or click and shows live CPU, RAM, the currently playing media, plus a quick app dock and device-status indicators.
 
 ![Electron](https://img.shields.io/badge/Electron-31.x-47848F?logo=electron&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D6)
@@ -12,17 +12,21 @@ The island always floats at the top-center of your screen. It auto-collapses/exp
 
 ## ✨ Features
 
-- **Compact mode** — a slim 170×30 bar showing CPU and RAM right on the island.
-- **Expanded mode** — click the island to open a 440×200 panel containing:
-  - **Media Player widget**: current track title, artist, album-art visualizer and media controls (Play/Pause, Next, Prev).
+- **Compact mode** — a slim bar showing live **CPU** and **RAM**.
+- **Expanded mode** — click the island to open a 440×220 panel containing:
+  - **Media Player widget**: current track title, artist, album artwork, a seekable **progress bar** with time, and Play/Pause/Next/Prev controls.
   - **System widget**: CPU & RAM progress bars with color warnings (yellow ≥ 60%, red ≥ 85%).
-- **Now playing detection** — automatically detects the playing track from any app (Spotify, YouTube, browsers...) via the Windows 10/11 WinRT API.
-- **Media controls** — press Play/Pause, Next, Prev straight from the island.
-- **Marquee effect** — long track titles scroll continuously.
-- **Music visualizer** — animated equalizer bars while music is playing.
-- **Smart click-through** — only the island receives mouse input; the surrounding transparent area never blocks your clicks.
-- **Launch at startup** — toggle right from the UI.
+- **Now playing detection** — automatically detects the playing track from any app (Spotify, YouTube, browsers...) via the Windows WinRT API.
+- **App dock** — add up to **13 apps** (pick any `.exe`, icon auto-fetched); click to launch, hover to remove. Persisted across restarts.
+- **Custom background** — set an **image or video** as the island background (auto-darkened so text stays readable).
+- **Mic/Camera indicator** — a colored dot replaces the CPU readout while the microphone/camera is in use (orange = mic, yellow = camera, red = both).
+- **Smart click-through** — only the island receives mouse input; surrounding transparent area never blocks your clicks.
+- **Auto-collapse** — expands on hover, auto-collapses 2 seconds after the cursor leaves.
 - **Always on top** — floats above every other window.
+- **Launch at startup** — toggle right from the UI.
+- **Task Manager button** — open Task Manager directly from the island.
+- **Uninstall button** — one-click uninstall (NSIS), shown only in the installed build.
+- **Localized UI** — automatically follows the system language (Vietnamese / English).
 
 ---
 
@@ -60,7 +64,7 @@ npm run dist
 
 Creates `dist/Dynamic Island Setup 1.0.0.exe` (NSIS installer). No code-signing
 certificate is used, so Windows SmartScreen may show a warning on first run
-(click *More info → Run anyway*).
+(click *More info → Run anyway*). The build requires an elevated (admin) shell.
 
 ---
 
@@ -68,14 +72,15 @@ certificate is used, so Windows SmartScreen may show a warning on first run
 
 ```
 dynamic-island/
-├── main.js            # Electron main process (window, IPC, autostart, media control)
+├── main.js            # Electron main process (window, IPC, autostart, dock, settings)
 ├── preload.js         # Secure bridge between Renderer and Node (CPU/RAM, calls media-helper)
-├── renderer.js        # UI logic (expand/collapse, stats & media updates, visualizer)
+├── renderer.js        # UI logic (expand/collapse, stats & media updates, dock, i18n)
 ├── index.html         # Dynamic Island UI (compact & expanded)
 ├── style.css          # All styling & animations
-├── media-helper.cs    # C# helper (WinRT): fetch now-playing track + media controls
+├── media-helper.cs    # C# helper (WinRT): now-playing track, media controls, privacy
 ├── media-helper.exe   # Pre-built helper binary (used at runtime)
 ├── build-helper.cmd   # Rebuild media-helper.exe with the built-in csc.exe
+├── build-dist.cmd     # Build the NSIS installer (run elevated)
 ├── package.json       # Project config & dependencies
 └── README.md
 ```
@@ -90,10 +95,10 @@ dynamic-island/
 
 | Component | Role |
 |---|---|
-| `main.js` | Creates a transparent frameless 480×250 Electron window that is always on top. Handles IPC for closing the app, autostart, and media control commands (delegated to `media-helper.exe`). |
-| `preload.js` | Computes CPU % (from `os.cpus()`) and RAM % (from `os.totalmem()`), and runs `media-helper.exe get` to fetch media info. |
-| `media-helper.cs` / `media-helper.exe` | Uses the WinRT API `GlobalSystemMediaTransportControlsSessionManager` to fetch the title, artist, album and artwork of the currently playing track, and to send Play/Pause/Next/Prev commands. |
-| `renderer.js` | Refreshes the UI every 2s (stats) and 1.5s (media), handles hover/click to expand or collapse the island, runs the visualizer and marquee effects. |
+| `main.js` | Creates a transparent frameless 480×250 Electron window that is always on top and never steals focus. Handles IPC for autostart, app dock, background picker, settings, cursor polling, and uninstall. |
+| `preload.js` | Computes CPU % (from `os.cpus()`) and RAM % (from `os.totalmem()`), and talks to the `media-helper` daemon for media info, seeking and privacy state. |
+| `media-helper.cs` / `media-helper.exe` | A persistent daemon using WinRT: `GlobalSystemMediaTransportControlsSessionManager` for the now-playing track and playback controls, and the Windows privacy ConsentStore for mic/camera-in-use detection. |
+| `renderer.js` | Refreshes the UI every 2s (stats & privacy) and 1.5s (media), handles hover/click expand/collapse via real cursor polling, runs the visualizer-free artwork + progress UI and i18n. |
 
 ---
 
@@ -101,18 +106,24 @@ dynamic-island/
 
 | Action | Result |
 |---|---|
-| **Hover** the island | Keeps the island open / cancels the collapse countdown |
+| **Hover** the island | Keeps it open / cancels the collapse countdown |
 | **Click** the island | Expands the island |
-| **Move mouse away** | Auto-collapses after 2 seconds |
+| **Move cursor away** | Auto-collapses after 2 seconds |
 | **✕** | Quits the app completely |
+| **Progress bar** | Click or drag to seek within the current track |
+| **➕** | Add an app to the dock |
+| **🖼** | Choose an image/video as the island background |
+| **🗑 (footer)** | Uninstall the app (installed build only) |
 
 ---
 
 ## 🛠️ Troubleshooting
 
-- **Media is not detected** — make sure the app playing music is running on Windows (Spotify, browsers and media-notification apps are supported). Some apps need system media notifications enabled.
-- **Island blocks your clicks** — if the transparent area around the island blocks clicks, make sure `main.js` calls `setIgnoreMouseEvents(true, { forward: true })`.
-- **CPU always shows 0%** — CPU is sampled over a 2-second interval, so it needs a moment to update.
+- **Media is not detected** — make sure the app playing music supports system media notifications (Spotify, browsers...).
+- **Media position doesn't move** — some apps (browsers, TikTok web) don't push position continuously; the island extrapolates using the wall clock and re-syncs on each poll.
+- **Camera indicator doesn't appear** — some apps use the camera through non-tracked paths (e.g., virtual cameras via OBS). Standard apps (Windows Camera, Chrome, Zalo, Zoom) are detected.
+- **High memory with video background** — a looping video adds a software decoder process (~40 MB). Switch back to an image or restart the app to free it (the app auto-restarts when you switch video → image).
+- **Island blocks your clicks** — the surrounding transparent area is click-through by design; only the island itself captures the mouse.
 
 ---
 
@@ -128,7 +139,7 @@ This project is distributed under the [MIT](LICENSE) license.
 
 Widget **Dynamic Island** cho Windows, mô phỏng giao diện Dynamic Island của iPhone, được xây dựng bằng **Electron**.
 
-Đảo luôn nằm nổi ở giữa mép trên màn hình, tự động thu gọn/mở rộng khi hover hoặc click, hiển thị thông tin CPU, RAM và trình phát nhạc đang chạy trên hệ thống.
+Đảo luôn nằm nổi ở giữa mép trên màn hình, tự động thu gọn/mở rộng khi hover hoặc click, hiển thị CPU, RAM, bài nhạc đang phát, kèm dock ứng dụng nhanh và chỉ báo trạng thái thiết bị.
 
 ![Electron](https://img.shields.io/badge/Electron-31.x-47848F?logo=electron&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D6)
@@ -138,17 +149,21 @@ Widget **Dynamic Island** cho Windows, mô phỏng giao diện Dynamic Island c�
 
 ## ✨ Tính năng
 
-- **Trạng thái thu gọn (Compact)** — thanh nhỏ gọn 170×30 hiển thị CPU và RAM trực tiếp trên đảo.
-- **Trạng thái mở rộng (Expanded)** — click vào đảo để mở panel 440×200 chứa:
-  - Widget **Media Player**: hiển thị tên bài hát, ca sĩ, album art dạng visualizer và các nút điều khiển (Play/Pause, Next, Prev).
-  - Widget **Hệ thống**: thanh tiến trình CPU & RAM với cảnh báo màu (vàng ≥ 60%, đỏ ≥ 85%).
-- **Nhận diện nhạc đang phát** — tự động phát hiện bài hát từ mọi ứng dụng (Spotify, YouTube, trình duyệt...) qua API WinRT của Windows 10/11.
-- **Điều khiển nhạc** — bấm Play/Pause, Next, Prev ngay trên đảo.
-- **Hiệu ứng marquee** — tiêu đề bài hát chạy chữ liên tục khi quá dài.
-- **Music visualizer** — thanh đập theo nhạc giả lập khi có bài đang phát.
-- **Click xuyên thấu thông minh** — chỉ nhận tương tác chuột khi hover vào đảo, phần ngoài trong suốt không chặn thao tác của bạn.
+- **Chế độ thu gọn** — thanh nhỏ gọn hiển thị **CPU** và **RAM** trực tiếp.
+- **Chế độ mở rộng** — click vào đảo để mở panel 440×220 gồm:
+  - **Widget Media Player**: tên bài hát, ca sĩ, ảnh bìa, **thanh tiến trình có thể tua** kèm thời gian, các nút Play/Pause/Next/Prev.
+  - **Widget Hệ thống**: thanh tiến trình CPU & RAM với cảnh báo màu (vàng ≥ 60%, đỏ ≥ 85%).
+- **Nhận diện nhạc đang phát** — tự động phát hiện bài hát từ mọi ứng dụng (Spotify, YouTube, trình duyệt...) qua API WinRT của Windows.
+- **Dock ứng dụng** — thêm tối đa **13 app** (chọn file `.exe`, tự lấy icon); click để mở, hover để xóa. Lưu vĩnh viễn qua mỗi lần khởi động lại.
+- **Nền tùy chỉnh** — đặt **ảnh hoặc video** làm nền đảo (tự làm tối để chữ dễ đọc).
+- **Chỉ báo Mic/Camera** — chấm màu thay chỗ CPU khi micro/camera đang dùng (cam = mic, vàng = camera, đỏ = cả hai).
+- **Click xuyên thấu thông minh** — chỉ nhận tương tác chuột khi hover vào đảo, phần trong suốt không chặn thao tác.
+- **Tự thu nhỏ** — mở rộng khi hover, tự thu nhỏ sau 2 giây khi chuột rời đi.
+- **Luôn trên cùng** — nổi trên mọi ứng dụng khác.
 - **Tự khởi động cùng Windows** — bật/tắt ngay trong giao diện.
-- **Cửa sổ luôn trên cùng** — nổi trên mọi ứng dụng khác.
+- **Nút Task Manager** — mở Task Manager trực tiếp từ đảo.
+- **Nút gỡ cài đặt** — gỡ app chỉ với 1 click (NSIS), chỉ hiện ở bản đã cài đặt.
+- **Đa ngôn ngữ** — tự động theo ngôn ngữ hệ thống (Tiếng Việt / English).
 
 ---
 
@@ -186,6 +201,7 @@ npm run dist
 
 Tạo ra `dist/Dynamic Island Setup 1.0.0.exe` (trình cài NSIS). Vì không dùng chứng chỉ
 ký số nên Windows SmartScreen có thể cảnh báo lần đầu (bấm *More info → Run anyway*).
+Lưu ý: cần chạy build với quyền **admin**.
 
 ---
 
@@ -193,14 +209,15 @@ ký số nên Windows SmartScreen có thể cảnh báo lần đầu (bấm *Mor
 
 ```
 dynamic-island/
-├── main.js            # Process chính Electron (tạo cửa sổ, IPC, autostart, media control)
+├── main.js            # Process chính Electron (cửa sổ, IPC, autostart, dock, settings)
 ├── preload.js         # Bridge an toàn giữa Renderer và Node (CPU/RAM, gọi media-helper)
-├── renderer.js        # Logic giao diện (expand/collapse, cập nhật stats & media, visualizer)
+├── renderer.js        # Logic giao diện (expand/collapse, stats & media, dock, i18n)
 ├── index.html         # Giao diện Dynamic Island (compact & expanded)
 ├── style.css          # Toàn bộ styling, hiệu ứng chuyển động
-├── media-helper.cs    # Helper C# (WinRT): lấy bài hát đang phát + điều khiển nhạc
+├── media-helper.cs    # Helper C# (WinRT): bài hát đang phát, điều khiển nhạc, quyền riêng tư
 ├── media-helper.exe   # File helper đã biên dịch sẵn (dùng lúc chạy)
 ├── build-helper.cmd   # Rebuild media-helper.exe bằng csc.exe có sẵn trên Windows
+├── build-dist.cmd     # Build installer NSIS (chạy với quyền admin)
 ├── package.json       # Cấu hình dự án & dependencies
 └── README.md
 ```
@@ -215,10 +232,10 @@ dynamic-island/
 
 | Thành phần | Vai trò |
 |---|---|
-| `main.js` | Tạo cửa sổ Electron trong suốt 480×250, luôn trên cùng, không khung. Nhận lệnh IPC để đóng app, bật autostart và gửi lệnh điều khiển nhạc (ủy thác cho `media-helper.exe`). |
-| `preload.js` | Tính toán % CPU (từ `os.cpus()`) và % RAM (từ `os.totalmem()`), thực thi `media-helper.exe get` để lấy thông tin nhạc. |
-| `media-helper.cs` / `media-helper.exe` | Dùng API WinRT `GlobalSystemMediaTransportControlsSessionManager` để lấy title, artist, album và ảnh bìa của bài hát đang phát, đồng thời gửi lệnh Play/Pause/Next/Prev. |
-| `renderer.js` | Cập nhật UI mỗi 2s (stats) và 1.5s (media), xử lý hover/click để mở rộng hoặc thu gọn đảo, chạy visualizer và hiệu ứng marquee. |
+| `main.js` | Tạo cửa sổ Electron trong suốt 480×250, luôn trên cùng, không nhận focus. Xử lý IPC: autostart, dock app, chọn nền, settings, poll chuột, gỡ cài đặt. |
+| `preload.js` | Tính % CPU (từ `os.cpus()`) và % RAM (từ `os.totalmem()`), giao tiếp với daemon `media-helper` để lấy media, tua và trạng thái quyền riêng tư. |
+| `media-helper.cs` / `media-helper.exe` | Daemon chạy nền dùng WinRT: `GlobalSystemMediaTransportControlsSessionManager` cho bài hát đang phát + điều khiển, và privacy ConsentStore để phát hiện mic/camera đang dùng. |
+| `renderer.js` | Cập nhật UI mỗi 2s (stats & privacy) và 1.5s (media), hover/click mở-thu gọn qua poll vị trí chuột thật, hiển thị ảnh bìa + thanh progress và i18n. |
 
 ---
 
@@ -230,14 +247,20 @@ dynamic-island/
 | **Click** vào đảo | Mở rộng (expanded) |
 | **Di chuột ra ngoài** | Tự động thu gọn sau 2 giây |
 | **✕** | Đóng hoàn toàn ứng dụng |
+| **Thanh progress** | Click hoặc kéo để tua bài hát |
+| **➕** | Thêm ứng dụng vào dock |
+| **🖼** | Chọn ảnh/video làm nền đảo |
+| **🗑 (footer)** | Gỡ cài đặt (chỉ bản đã cài) |
 
 ---
 
 ## 🛠️ Các vấn đề thường gặp
 
-- **Không nhận diện được nhạc** — đảm bảo ứng dụng phát nhạc đang chạy trên Windows (hỗ trợ Spotify, trình duyệt, các app hỗ trợ hệ thống media). Một số ứng dụng cần bật media notification.
-- **Đảo bị chặn thao tác** — nếu phần trong suốt quanh đảo chặn click, hãy chắc chắn `main.js` đã gọi `setIgnoreMouseEvents(true, { forward: true })`.
-- **CPU hiển thị 0%** — chỉ số CPU tính theo khoảng thời gian lấy mẫu (2 giây), cần có thời gian để cập nhật.
+- **Không nhận diện được nhạc** — đảm bảo app phát nhạc hỗ trợ system media notification (Spotify, trình duyệt...).
+- **Vị trí nhạc không chạy** — một số app (trình duyệt, TikTok web) không đẩy vị trí liên tục; đảo tự ngoại suy theo đồng hồ và đồng bộ lại mỗi lần poll.
+- **Không thấy chỉ báo camera** — một số app dùng camera qua đường không được theo dõi (ví dụ virtual cam qua OBS). Các app chuẩn (Windows Camera, Chrome, Zalo, Zoom) đều phát hiện được.
+- **RAM cao khi dùng video nền** — video chạy loop thêm 1 process decode phần mềm (~40MB). Đổi sang ảnh hoặc khởi động lại app để giải phóng (app tự restart khi đổi video → ảnh).
+- **Đảo chặn thao tác** — phần trong suốt quanh đảo vốn click xuyên qua; chỉ đảo mới nhận chuột.
 
 ---
 
