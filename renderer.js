@@ -305,15 +305,18 @@ function flashCompactDevice(svg, name) {
   flashActive = true;
   target.innerHTML = svg;
   target.title = name || '';
+  // Remove rồi re-add class để restart animation nếu có thiết bị mới cắm giữa chừng
+  target.classList.remove('device-flash');
+  void target.offsetWidth;
   target.classList.add('device-flash');
   if (flashTimer) clearTimeout(flashTimer);
   flashTimer = setTimeout(() => {
     flashActive = false;
+    target.classList.remove('device-flash');
     target.innerHTML = '';
     target.title = '';
-    target.classList.remove('device-flash');
     updateStats();
-  }, 3000);
+  }, 3100);
 }
 
 window.api.onDeviceEvent((ev) => {
