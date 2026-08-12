@@ -68,11 +68,6 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
 
-  // Chuyển hướng console từ Renderer sang Terminal để debug
-  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
-    console.log(`[RENDERER CONSOLE] ${message} (at ${sourceId}:${line})`);
-  });
-
   // Đưa cửa sổ lên trên cùng
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
@@ -192,9 +187,7 @@ function createWindow() {
   ipcMain.on('save-apps', (event, apps) => {
     try {
       fs.writeFileSync(appsFile(), JSON.stringify(apps));
-    } catch (err) {
-      console.error('Save apps error:', err);
-    }
+    } catch (err) { /* bỏ qua */ }
   });
 
   // === TÙY CHỈNH NỀN & THEME ===
@@ -211,9 +204,7 @@ function createWindow() {
   ipcMain.on('save-settings', (event, settings) => {
     try {
       fs.writeFileSync(settingsFile(), JSON.stringify(settings));
-    } catch (err) {
-      console.error('Save settings error:', err);
-    }
+    } catch (err) { /* bỏ qua */ }
   });
 
   // Chọn ảnh/video nền
@@ -268,7 +259,6 @@ app.whenReady().then(() => {
     checkExternalMonitor((ext) => {
       if (ext === lastExternalState) return;
       lastExternalState = ext;
-      console.log('[MONITOR] external =', ext);
       if (ext) {
         const primary = screen.getPrimaryDisplay();
         const external = screen.getAllDisplays().find((d) => d.id !== primary.id);

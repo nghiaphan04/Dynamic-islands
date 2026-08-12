@@ -455,7 +455,6 @@ let lastMediaImage = null;
 
 function updateMedia() {
   window.api.getMediaStats().then((media) => {
-    console.log("[MEDIA DEBUG]", JSON.stringify(media));
     if (media && (media.status === 'playing' || media.status === 'paused')) {
       island.classList.add('has-media');
       
