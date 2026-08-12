@@ -37,7 +37,9 @@ body {
   transition: width 0.35s cubic-bezier(0.25, 1, 0.5, 1),
               height 0.35s cubic-bezier(0.25, 1, 0.5, 1),
               border-radius 0.35s ease,
-              background-color 0.3s ease;
+              background-color 0.3s ease,
+              box-shadow 0.3s ease,
+              transform 0.2s ease;
 }
 
 /* Trạng thái thu gọn (Compact) */
@@ -52,6 +54,7 @@ body {
   background: rgba(0, 0, 0, 1.0);
   box-shadow: 0 10px 45px rgba(0, 0, 0, 0.8), 
               inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  transform: scale(1.04);
 }
 
 /* Tăng chiều rộng khi hòn đảo thu gọn đang phát nhạc */
