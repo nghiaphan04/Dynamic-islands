@@ -24,14 +24,15 @@ function getMediaHelperPath() {
 const WINDOW_WIDTH = 480;
 const WINDOW_HEIGHT = 250;
 
-function moveWindowToDisplay(display) {
+// force=true: bỏ qua kiểm tra vị trí, buộc di chuyển ngay (dùng khi rút màn hình)
+function moveWindowToDisplay(display, force = false) {
   if (!mainWindow || !display || moving) return;
   const { x, y, width } = display.workArea;
   const nx = Math.round(x + (width - WINDOW_WIDTH) / 2);
   const ny = y + 10;
   const cur = mainWindow.getBounds();
-  // Chỉ di chuyển khi vị trí thực sự khác (tránh lặp gây nháy)
-  if (Math.abs(cur.x - nx) > 2 || Math.abs(cur.y - ny) > 2) {
+  // Chỉ di chuyển khi vị trí thực sự khác (tránh lặp gây nháy), hoặc khi force=true
+  if (force || Math.abs(cur.x - nx) > 2 || Math.abs(cur.y - ny) > 2) {
     moving = true;
     // Fade-out → di chuyển → fade-in
     mainWindow.webContents.send('island-leaving');
@@ -44,6 +45,51 @@ function moveWindowToDisplay(display) {
       moving = false;
     }, 200);
   }
+}
+
+// Khi rút màn hình ngoài, setPosition/setBounds/center() đều thất bại vì
+// DPI context của window bị kẹt ở scaleFactor của màn hình ngoài (thường 1.0)
+// trong khi primary có scaleFactor khác (1.25). Giải pháp: tạo lại BrowserWindow
+// mới trực tiếp trên primary — window mới luôn có đúng DPI context từ đầu.
+function reopenWindow() {
+  if (!mainWindow) return;
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width } = primaryDisplay.workAreaSize;
+  const nx = Math.floor((width - WINDOW_WIDTH) / 2);
+
+  const newWin = new BrowserWindow({
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
+    x: nx,
+    y: 10,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    hasShadow: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false
+    }
+  });
+
+  newWin.loadFile('index.html');
+  newWin.setAlwaysOnTop(true, 'screen-saver');
+  newWin.setFocusable(false);
+  newWin.setIgnoreMouseEvents(true, { forward: true });
+
+  const oldWin = mainWindow;
+  mainWindow = newWin;   // Cập nhật global → các IPC handler tự dùng window mới
+  islandExpanded = false;
+  moving = false;
+
+  // Hủy window cũ sau khi window mới load xong (tránh nháy)
+  newWin.webContents.once('did-finish-load', () => {
+    if (oldWin && !oldWin.isDestroyed()) oldWin.destroy();
+  });
 }
 
 function createWindow() {
@@ -256,8 +302,13 @@ app.whenReady().then(() => {
 
   function checkExternalMonitor(cb) {
     execFile(helperExe, ['monitors'], { timeout: 3000 }, (err, stdout) => {
-      try { cb(!!JSON.parse(stdout.trim()).external); }
-      catch (err2) { cb(true); }
+      if (err) { cb(false); return; }
+      try {
+        const result = JSON.parse(stdout.trim());
+        cb(!!result.external);
+      } catch {
+        cb(false);
+      }
     });
   }
 
@@ -265,8 +316,9 @@ app.whenReady().then(() => {
     if (!mainWindow || islandExpanded) return;
     checkExternalMonitor((ext) => {
       const primary = screen.getPrimaryDisplay();
+      const allDisplays = screen.getAllDisplays();
       if (ext) {
-        const external = screen.getAllDisplays().find((d) => d.id !== primary.id);
+        const external = allDisplays.find((d) => d.id !== primary.id);
         moveWindowToDisplay(external || primary);
       } else {
         moveWindowToDisplay(primary);
@@ -275,6 +327,23 @@ app.whenReady().then(() => {
   }
 
   setInterval(pollMonitors, 2000);
+
+  // Lắng nghe sự kiện rút màn hình:
+  // setPosition/setBounds/center() đều thất bại sau khi chuyển DPI context
+  // (window bị kẹt ở scaleFactor của màn hình ngoài).
+  // Giải pháp: tạo lại BrowserWindow mới trực tiếp trên primary display.
+  screen.on('display-removed', () => {
+    if (!mainWindow || islandExpanded) return;
+    // Đợi 500ms để Windows ổn định layout (taskbar, workArea) sau khi rút màn hình
+    setTimeout(() => {
+      const primary = screen.getPrimaryDisplay();
+      const allDisplays = screen.getAllDisplays();
+      const hasExternal = allDisplays.some((d) => d.id !== primary.id);
+      if (!hasExternal) {
+        reopenWindow();
+      }
+    }, 500);
+  });
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
