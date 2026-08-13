@@ -14,6 +14,14 @@ let mainWindow;
 let islandExpanded = false;
 let moving = false;
 let lastExternalState = null;
+
+// Khi đóng gói, media-helper.exe được giải nén ra resources/app.asar.unpacked/
+function getMediaHelperPath() {
+  const direct = path.join(__dirname, 'media-helper.exe');
+  const unpacked = path.join(process.resourcesPath, 'app.asar.unpacked', 'media-helper.exe');
+  if (fs.existsSync(unpacked)) return unpacked;
+  return direct;
+}
 const WINDOW_WIDTH = 480;
 const WINDOW_HEIGHT = 250;
 
@@ -245,7 +253,7 @@ app.whenReady().then(() => {
   // Poll tình trạng màn hình ngoài qua PnP (media-helper.exe monitors) mỗi 2s.
   // Đáng tin hơn screen.getAllDisplays() vì Windows giữ ghost display khi rút màn hình.
   const { execFile } = require('child_process');
-  const helperExe = path.join(__dirname, 'media-helper.exe');
+  const helperExe = getMediaHelperPath();
 
   function checkExternalMonitor(cb) {
     execFile(helperExe, ['monitors'], { timeout: 3000 }, (err, stdout) => {
