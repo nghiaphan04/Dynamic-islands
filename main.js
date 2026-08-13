@@ -13,7 +13,6 @@ app.commandLine.appendSwitch('disable-features', 'BackgroundTracing,SpareRendere
 let mainWindow;
 let islandExpanded = false;
 let moving = false;
-let lastExternalState = null;
 
 // Khi đóng gói, media-helper.exe được giải nén ra resources/app.asar.unpacked/
 function getMediaHelperPath() {
@@ -263,16 +262,14 @@ app.whenReady().then(() => {
   }
 
   function pollMonitors() {
-    if (!mainWindow || islandExpanded || moving) return;
+    if (!mainWindow || islandExpanded) return;
     checkExternalMonitor((ext) => {
-      if (ext === lastExternalState) return;
-      lastExternalState = ext;
+      const primary = screen.getPrimaryDisplay();
       if (ext) {
-        const primary = screen.getPrimaryDisplay();
         const external = screen.getAllDisplays().find((d) => d.id !== primary.id);
         moveWindowToDisplay(external || primary);
       } else {
-        moveWindowToDisplay(screen.getPrimaryDisplay());
+        moveWindowToDisplay(primary);
       }
     });
   }
