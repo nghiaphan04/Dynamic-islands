@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Tuỳ chỉnh Dynamic Islands</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <main>
+    <h1>Tuỳ chỉnh</h1>
+
+    <section>
+      <h2>Vị trí và kích thước</h2>
+      <label class="row">Màn hình <select id="monitor"></select></label>
+      <label class="row">Cách mép trên <span class="range"><input type="range" id="top" min="0" max="40" step="1"><output></output></span></label>
+      <label class="row">Cỡ island
+        <select id="scale">
+          <option value="0.9">Nhỏ</option>
+          <option value="1">Vừa</option>
+          <option value="1.15">Lớn</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <h2>Giao diện</h2>
+      <label class="row">Màu nền island <input type="color" id="bg"></label>
+      <label class="row">Màu ô đang bật <input type="color" id="accent"></label>
+      <label class="row">Độ bo góc <span class="range"><input type="range" id="radius" min="0.5" max="1.2" step="0.05"><output></output></span></label>
+      <label class="row">Nền chuyển màu ở bảng điều khiển <input type="checkbox" class="toggle" id="gradient"></label>
+    </section>
+
+    <section>
+      <h2>Ô chức năng</h2>
+      <p class="hint">Bỏ chọn để ẩn ô, dùng ▲ ▼ để sắp xếp.</p>
+      <ul id="tiles"></ul>
+    </section>
+
+    <section>
+      <h2>Popup</h2>
+      <label class="row">Popup khi cắm sạc <input type="checkbox" class="toggle" id="popCharge"></label>
+      <label class="row">Popup tai nghe kết nối / ngắt <input type="checkbox" class="toggle" id="popBt"></label>
+      <label class="row">Thời gian hiện popup <span class="range"><input type="range" id="popSeconds" min="2" max="8" step="1"><output></output></span></label>
+    </section>
+
+    <section>
+      <h2>Animation</h2>
+      <label class="row">Bật animation <input type="checkbox" class="toggle" id="anim"></label>
+      <label class="row">Tốc độ
+        <select id="speed">
+          <option value="1.4">Chậm</option>
+          <option value="1">Vừa</option>
+          <option value="0.7">Nhanh</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <h2>Hành vi</h2>
+      <label class="row">Mở island bằng
+        <select id="openOn">
+          <option value="click">Click</option>
+          <option value="hover">Rê chuột</option>
+        </select>
+      </label>
+      <label class="row">Khởi động cùng Windows <input type="checkbox" class="toggle" id="autostart"></label>
+      <label class="row">Phím tắt bật / ẩn island <input type="text" id="hotkey" placeholder="Bấm tổ hợp phím" readonly></label>
+      <p class="hint" id="hotkey-msg"></p>
+    </section>
+
+    <section>
+      <h2>Thời tiết</h2>
+      <label class="row">Vị trí
+        <select id="weatherMode">
+          <option value="auto">Tự động (vị trí Windows)</option>
+          <option value="city">Thành phố cố định</option>
+        </select>
+      </label>
+      <label class="row" id="city-row">Thành phố <input type="text" id="city" placeholder="VD: Hà Nội"></label>
+      <label class="row">Đơn vị
+        <select id="unit">
+          <option value="c">°C</option>
+          <option value="f">°F</option>
+        </select>
+      </label>
+    </section>
+
+    <footer>
+      <button id="reset">Khôi phục mặc định</button>
+    </footer>
+  </main>
+
+  <script src="settings-store.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

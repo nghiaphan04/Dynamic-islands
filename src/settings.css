@@ -1,0 +1,110 @@
+:root { color-scheme: dark; }
+
+html, body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font: 13px "Segoe UI Variable Text", "Segoe UI", sans-serif;
+}
+
+main { padding: 20px 22px 28px; }
+h1 { font-size: 22px; margin: 0 0 16px; }
+h2 { font-size: 12px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 8px 4px; }
+
+section {
+  background: #1c1c1e;
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+section h2 { margin-left: 0; }
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  border-bottom: 1px solid #2c2c2e;
+}
+section .row:last-of-type { border-bottom: 0; }
+
+.hint { color: #8e8e93; font-size: 12px; margin: 0 0 6px; }
+
+select, input[type="text"] {
+  font: inherit;
+  color: #fff;
+  background: #2c2c2e;
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  outline: none;
+  min-width: 150px;
+}
+input[type="text"]:focus { box-shadow: 0 0 0 2px #4f9fd0; }
+
+input[type="color"] {
+  width: 42px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.range { display: flex; align-items: center; gap: 10px; }
+.range output { width: 34px; text-align: right; color: #c7c7cc; }
+input[type="range"] { width: 150px; accent-color: #fff; }
+
+.toggle {
+  appearance: none;
+  width: 42px;
+  height: 25px;
+  border-radius: 13px;
+  background: #39393d;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s ease;
+  margin: 0;
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.3s cubic-bezier(0.32, 1.35, 0.5, 1);
+}
+.toggle:checked { background: #34c759; }
+.toggle:checked::after { transform: translateX(17px); }
+
+#tiles { list-style: none; margin: 0; padding: 0; }
+#tiles li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  border-bottom: 1px solid #2c2c2e;
+}
+#tiles li:last-child { border-bottom: 0; }
+#tiles li span { flex: 1; }
+#tiles li.off span { color: #636366; }
+#tiles button, footer button {
+  font: inherit;
+  color: #c7c7cc;
+  background: #2c2c2e;
+  border: 0;
+  border-radius: 6px;
+  width: 26px;
+  height: 24px;
+  cursor: pointer;
+}
+#tiles button:disabled { opacity: 0.3; cursor: default; }
+#tiles input { accent-color: #34c759; width: 16px; height: 16px; }
+
+footer { text-align: center; }
+footer button { width: auto; padding: 8px 16px; border-radius: 10px; }

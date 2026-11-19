@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Dynamic Islands</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="island" data-view="idle">
+
+    <!-- Compact states -->
+    <section class="view" data-name="idle"></section>
+
+    <section class="view mini" data-name="mini-music">
+      <img class="mini-cover" id="mini-cover" alt="">
+      <div class="wave" id="mini-wave"><i></i><i></i><i></i><i></i><i></i></div>
+    </section>
+
+    <section class="view mini" data-name="mini-stopwatch">
+      <span class="ic orange" data-icon="stopwatch-line"></span>
+      <span class="mini-time" id="mini-sw"></span>
+    </section>
+
+    <section class="view mini" data-name="mini-timer">
+      <span class="ic orange" data-icon="timer"></span>
+      <span class="mini-time" id="mini-tm"></span>
+    </section>
+
+    <!-- Running timer, opened from the compact island (as in the sample) -->
+    <section class="view mini" data-name="timer-live">
+      <span class="tl-buttons">
+        <button class="round sm pause-btn" id="tl-toggle"><span class="ic sm" id="tl-icon" data-icon="pause"></span></button>
+        <button class="round sm dim" id="tl-cancel"><span class="ic sm" data-icon="close"></span></button>
+      </span>
+      <span class="tl-right"><small class="orange">Hẹn giờ</small><span class="tl-time" id="tl-time"></span></span>
+    </section>
+
+    <section class="view mini" data-name="pop-done">
+      <span class="ic orange ring-pulse" data-icon="timer"></span>
+      <span class="pop-title">Hết giờ</span>
+      <button class="done-ok" id="done-ok">OK</button>
+    </section>
+
+    <section class="view mini" data-name="pop-charge">
+      <span class="pop-title">Đang sạc</span>
+      <span class="pop-right green"><span id="pop-charge-pct"></span><span class="battery charging" id="pop-charge-bat"><b></b></span></span>
+    </section>
+
+    <section class="view mini" data-name="pop-bt">
+      <span class="ic pop-ear" data-icon="earbuds"></span>
+      <div class="pop-text">
+        <small id="pop-bt-state"></small>
+        <strong id="pop-bt-name"></strong>
+      </div>
+      <span class="ring" id="pop-bt-ring"></span>
+    </section>
+
+    <!-- Control center -->
+    <section class="view panel" data-name="hub">
+      <header class="hub-head">
+        <span id="hub-time"></span>
+        <span class="hub-status">
+          <span id="hub-date"></span>
+          <span class="ic xs" id="hub-bt" data-icon="bluetooth"></span>
+          <span class="ic xs" id="hub-wifi" data-icon="wifi"></span>
+          <span class="green" id="hub-pct"></span>
+          <span class="battery" id="hub-bat"><b></b></span>
+        </span>
+      </header>
+      <div class="tiles" id="tiles"></div>
+    </section>
+
+    <!-- Music -->
+    <section class="view panel" data-name="music">
+      <div class="music-top">
+        <img class="cover" id="m-cover" alt="">
+        <div class="music-text">
+          <strong class="clip" id="m-title"></strong>
+          <small class="clip" id="m-artist"></small>
+        </div>
+        <div class="wave" id="m-wave"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="timeline">
+        <span id="m-pos">0:00</span>
+        <div class="bar" id="m-bar"><div id="m-fill"></div></div>
+        <span id="m-left">-0:00</span>
+      </div>
+      <div class="music-controls">
+        <button class="ghost" data-go="hub" title="Bảng điều khiển"><span class="ic sm" data-icon="grid"></span></button>
+        <button data-skip="-10" class="seek" title="Lùi 10 giây"><span class="ic md" data-icon="back10"></span></button>
+        <button data-media="previous" class="track" id="m-prev" title="Bài trước"><span class="ic md" data-icon="prev"></span></button>
+        <button data-media="toggle"><span class="ic lg" id="m-play" data-icon="pause"></span></button>
+        <button data-media="next" class="track" id="m-next" title="Bài sau"><span class="ic md" data-icon="next"></span></button>
+        <button data-skip="10" class="seek" title="Tới 10 giây"><span class="ic md" data-icon="fwd10"></span></button>
+        <button class="ghost" data-go="volume" title="Âm lượng"><span class="ic sm" data-icon="volume"></span></button>
+      </div>
+    </section>
+
+    <!-- Calendar -->
+    <section class="view panel" data-name="calendar">
+      <div class="cal">
+        <div class="cal-left">
+          <header class="cal-head">
+            <span class="title-row"><strong id="cal-title"></strong></span>
+            <span>
+              <button class="chev" id="cal-prev"><span class="ic sm" data-icon="chev-left"></span></button>
+              <button class="chev" id="cal-next"><span class="ic sm" data-icon="chev-right"></span></button>
+            </span>
+          </header>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div class="cal-right">
+          <small id="cal-lunar"></small>
+          <strong id="cal-date"></strong>
+          <span class="red" id="cal-weekday"></span>
+          <div class="cal-sep"></div>
+          <ul id="cal-holidays"></ul>
+          <div class="cal-next">
+            <small>Nghỉ lễ tiếp theo</small>
+            <span class="orange clip" id="cal-next-name"></span>
+            <small id="cal-next-when"></small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Weather -->
+    <section class="view panel" data-name="weather">
+      <div class="stars"></div>
+      <div class="wx">
+        <div class="wx-left">
+          <span class="title-row"><strong>Thời tiết</strong></span>
+          <small class="wx-next-label">Tiếp theo</small>
+          <span class="wx-next" id="wx-next"></span>
+          <small class="purple" id="wx-next-when"></small>
+        </div>
+        <div class="wx-right">
+          <div class="wx-top">
+            <span id="wx-date"></span>
+            <strong id="wx-clock"></strong>
+            <span class="wx-temp" id="wx-temp"></span>
+          </div>
+          <div class="wx-place">
+            <span class="ic xs" data-icon="pin"></span>
+            <span id="wx-city"></span>
+            <span id="wx-desc"></span>
+          </div>
+          <svg class="arc" id="wx-arc" viewBox="0 0 260 70"></svg>
+          <div class="wx-marks" id="wx-marks"></div>
+        </div>
+      </div>
+      <div class="wx-ask" id="wx-ask">
+        <span>Cho phép quyền vị trí để xem thời tiết, hoặc nhập thành phố:</span>
+        <form id="wx-form"><input id="wx-input" placeholder="VD: Hà Nội" autocomplete="off"><button>Xem</button></form>
+        <button class="link" id="wx-perm">Mở cài đặt vị trí</button>
+      </div>
+    </section>
+
+    <!-- Stopwatch -->
+    <section class="view panel" data-name="stopwatch">
+      <div class="sw-head">
+        <strong class="sw-title" id="sw-title">Bấm giờ</strong>
+        <div class="seg" id="sw-seg">
+          <i class="seg-pill"></i>
+          <button data-mode="sw" class="on">Bấm giờ</button>
+          <button data-mode="timer">Hẹn giờ</button>
+        </div>
+      </div>
+      <div class="sw-row" id="sw-pane">
+        <span class="sw-time"><span id="sw-main">00:00</span><small id="sw-cs">.00</small></span>
+        <span class="sw-buttons">
+          <button class="round dim" id="sw-reset"><span class="ic sm" data-icon="reset"></span></button>
+          <button class="round light" id="sw-toggle"><span class="ic md" id="sw-icon" data-icon="play"></span></button>
+        </span>
+      </div>
+      <div class="sw-row" id="tm-pane" hidden>
+        <span class="sw-time orange" id="tm-main">05:00</span>
+        <span class="sw-buttons">
+          <button class="round dim" id="tm-cancel"><span class="ic sm" data-icon="close"></span></button>
+          <button class="round tm-go" id="tm-toggle"><span class="ic md" id="tm-icon" data-icon="play"></span></button>
+        </span>
+      </div>
+      <div class="presets" id="tm-presets" hidden>
+        <button data-min="1">1p</button><button data-min="3">3p</button><button data-min="5" class="on">5p</button>
+        <button data-min="10">10p</button><button data-min="15">15p</button><button data-min="25">25p</button>
+        <button data-min="30">30p</button><button data-min="60">60p</button>
+      </div>
+    </section>
+
+    <!-- Notes -->
+    <section class="view panel" data-name="notes">
+      <span class="title-row sec-title"><strong>Ghi chú</strong></span>
+      <textarea id="note" placeholder="Viết gì đó…" spellcheck="false"></textarea>
+    </section>
+
+    <!-- Wi-Fi -->
+    <section class="view panel" data-name="wifi">
+      <header class="list-head">
+        <span><span class="ic xs" data-icon="wifi"></span> Wi-Fi</span>
+        <span>
+          <button class="chev" id="wifi-rescan" title="Quét lại"><span class="ic xs" data-icon="reset"></span></button>
+          <button class="switch" id="wifi-switch"></button>
+        </span>
+      </header>
+      <div class="list" id="wifi-list"></div>
+    </section>
+
+    <!-- Bluetooth -->
+    <section class="view panel" data-name="bluetooth">
+      <header class="list-head">
+        <span><span class="ic xs" data-icon="bluetooth"></span> Bluetooth</span>
+        <button class="switch" id="bt-switch"></button>
+      </header>
+      <div class="list" id="bt-list"></div>
+    </section>
+
+    <!-- Volume -->
+    <section class="view mini" data-name="volume">
+      <button class="vol-icon" id="vol-mute"><span class="ic md" id="vol-icon" data-icon="volume"></span></button>
+      <div class="dashes" id="vol-dashes"></div>
+    </section>
+  </div>
+
+  <!-- Second activity split off the island (e.g. music while a timer runs) -->
+  <button id="bubble" title="Mở"><img id="bubble-cover" alt=""><span class="ic orange" id="bubble-icon" data-icon="timer"></span></button>
+
+  <button id="back" title="Quay lại"><span class="ic" data-icon="chev-left"></span></button>
+
+  <script src="settings-store.js"></script>
+  <script src="icons.js"></script>
+  <script src="lunar.js"></script>
+  <script src="weather.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
