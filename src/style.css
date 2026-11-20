@@ -68,6 +68,22 @@ small { color: var(--dim); font-size: 11px; }
     opacity 0.18s ease,
     background 0.3s ease;
 }
+/* Hairline edge drawn above the content: bright at the top, fading toward the bottom like glass. */
+#island::after, #back::after, #bubble::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--bw, 1px);
+  background: linear-gradient(180deg, var(--bc, rgba(255, 255, 255, 0.14)), var(--bc2, rgba(255, 255, 255, 0.04)) 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 10;
+}
+/* The back button shares the island's edge, so it has no line of its own there. */
+#back::after { padding-right: 0; }
 
 #island[data-view="idle"]:hover { transform: translateX(-50%) scale(calc(var(--z, 1) * 1.05)); }
 

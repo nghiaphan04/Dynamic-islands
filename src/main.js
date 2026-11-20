@@ -1034,6 +1034,11 @@ function applySettings(next) {
   root.setProperty("--bg", settings.bg);
   root.setProperty("--tile-on", settings.accent);
   root.setProperty("--speed", settings.speed);
+  const hex = settings.borderColor.replace("#", "");
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  root.setProperty("--bw", settings.borderWidth + "px");
+  root.setProperty("--bc", `rgba(${r}, ${g}, ${b}, ${settings.borderAlpha})`);
+  root.setProperty("--bc2", `rgba(${r}, ${g}, ${b}, ${settings.borderAlpha * 0.3})`);
   document.body.dataset.anim = settings.anim ? "on" : "off";
   document.body.classList.toggle("no-gradient", !settings.gradient);
   root.setProperty("--z", settings.scale);

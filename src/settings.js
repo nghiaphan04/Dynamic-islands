@@ -2,9 +2,12 @@ const { invoke } = window.__TAURI__.core;
 const $ = (id) => document.getElementById(id);
 let s = Settings.load();
 
-const FIELDS = ["top", "scale", "bg", "accent", "radius", "gradient", "popCharge", "popBt", "popSeconds", "anim", "speed", "openOn", "weatherMode", "city", "unit"];
-const NUMBERS = new Set(["top", "scale", "radius", "popSeconds", "speed"]);
-const FORMAT = { top: (v) => `${v}px`, radius: (v) => `${Math.round(v * 100)}%`, popSeconds: (v) => `${v}s` };
+const FIELDS = ["top", "scale", "bg", "accent", "radius", "borderWidth", "borderColor", "borderAlpha", "gradient", "popCharge", "popBt", "popSeconds", "anim", "speed", "openOn", "weatherMode", "city", "unit"];
+const NUMBERS = new Set(["top", "scale", "radius", "borderWidth", "borderAlpha", "popSeconds", "speed"]);
+const FORMAT = {
+  top: (v) => `${v}px`, radius: (v) => `${Math.round(v * 100)}%`, popSeconds: (v) => `${v}s`,
+  borderWidth: (v) => (v ? `${v}px` : "Tắt"), borderAlpha: (v) => `${Math.round(v * 100)}%`,
+};
 
 function commit() {
   Settings.save(s);
